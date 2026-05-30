@@ -140,3 +140,32 @@ COMMUNICATOR_PROMPT = ChatPromptTemplate.from_messages([
         "Draft personalized emails for each candidate and return the JSON array."
     ),
 ])
+
+
+ATTENDANCE_PROMPT = ChatPromptTemplate.from_messages([
+    (
+        "system",
+        "You are an expert HR Analyst Agent. Your job is to review employee attendance data "
+        "(total work hours and number of leaves taken) and evaluate their performance/reliability.\n\n"
+        "RULES:\n"
+        "1. Analyze each employee's data.\n"
+        "2. Assign an 'ai_score' out of 100 based on their reliability (high hours and low leaves mean a higher score).\n"
+        "3. Write a concise, 1-sentence 'ai_feedback' performance review for each employee.\n"
+        "4. Return ONLY valid JSON — an array of objects.\n\n"
+        "Output format (JSON array):\n"
+        "[\n"
+        '  {{\n'
+        '    "name": "Employee Name",\n'
+        '    "total_hours": 160.5,\n'
+        '    "leaves_taken": 2,\n'
+        '    "ai_score": 85,\n'
+        '    "ai_feedback": "Consistent attendance with acceptable leave balance, demonstrating strong reliability."\n'
+        '  }}\n'
+        "]\n"
+    ),
+    (
+        "human",
+        "Here is the raw attendance summary data:\n{attendance_data}\n\n"
+        "Generate the performance report and return the JSON array."
+    ),
+])

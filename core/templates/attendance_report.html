@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Report{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header" style="margin-bottom: var(--space-8);">
+        <h1>AI Attendance Report</h1>
+        <p>Agent evaluation of employee work hours and reliability.</p>
+        <div class="accent-line"></div>
+    </div>
+
+    <div class="action-bar" style="margin-top: 0; margin-bottom: var(--space-8);">
+        <div class="action-bar-text">
+            <strong>Analysis Complete</strong><br>
+            The agent has processed the timesheet and generated the following insights.
+        </div>
+        <div class="action-bar-buttons">
+            <a href="{% url 'core:attendance_upload' %}" class="btn btn-outline">Upload Another</a>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-wrapper" style="border: none; border-radius: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Total Hours</th>
+                        <th>Leaves Taken</th>
+                        <th>AI Score</th>
+                        <th>Agent Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>
+                            <div class="candidate-name">{{ report.name }}</div>
+                        </td>
+                        <td>
+                            <strong>{{ report.total_hours }}</strong> hrs
+                        </td>
+                        <td>
+                            <span class="status-badge {% if report.leaves_taken > 0 %}status-pending{% else %}status-approved{% endif %}">
+                                {{ report.leaves_taken }} days
+                            </span>
+                        </td>
+                        <td>
+                            <span class="score-badge {% if report.ai_score >= 80 %}score-high{% elif report.ai_score >= 50 %}score-medium{% else %}score-low{% endif %}">
+                                {{ report.ai_score }}/100
+                            </span>
+                        </td>
+                        <td style="max-width: 300px; line-height: 1.5; color: var(--text-secondary);">
+                            {{ report.ai_feedback }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: var(--space-10) 0;">
+                            <div style="font-size: var(--font-3xl); margin-bottom: var(--space-4);">🤷‍♂️</div>
+                            <div class="card-title">No data to report</div>
+                            <div class="card-subtitle">Ensure the uploaded Excel file contains valid login/logout data.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

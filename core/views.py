@@ -266,3 +266,59 @@ def success_view(request, job_id):
         "job": job,
         "candidates": candidates,
     })
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 5: Attendance Tracker — Upload timesheet
+# ──────────────────────────────────────────────────────────────────────────────
+
+def attendance_upload_view(request):
+    """
+    GET  → Render the upload form.
+    POST → Save the uploaded Excel file, generate report, and store in session.
+    """
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("attendance_file")
+        if not uploaded_file:
+            messages.error(request, "Please upload an Excel file.")
+            return render(request, "attendance.html")
+            
+        if not (uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xls')):
+            messages.error(request, "Invalid file format. Please upload .xlsx or .xls files only.")
+            return render(request, "attendance.html")
+
+        # Save temporarily
+        upload_dir = os.path.join(settings.MEDIA_ROOT, "attendance")
+        os.makedirs(upload_dir, exist_ok=True)
+        filename = f"{uuid.uuid4().hex[:8]}_{uploaded_file.name}"
+        file_path = os.path.join(upload_dir, filename)
+        
+        with open(file_path, "wb+") as fh:
+            for chunk in uploaded_file.chunks():
+                fh.write(chunk)
+                
+        try:
+            from ai_engine.attendance import generate_attendance_report
+            reports = generate_attendance_report(file_path)
+            
+            # Store reports in session to pass to the report view
+            request.session['attendance_reports'] = reports
+            messages.success(request, "Timesheet processed successfully!")
+            return redirect("core:attendance_report")
+            
+        except Exception as exc:
+            logger.exception("Attendance processing failed")
+            messages.error(request, f"Failed to process timesheet: {exc}")
+            return render(request, "attendance.html")
+
+    return render(request, "attendance.html")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 6: Attendance Tracker — View report
+# ──────────────────────────────────────────────────────────────────────────────
+
+def attendance_report_view(request):
+    """Display the AI-generated attendance report from session."""
+    reports = request.session.get('attendance_reports', [])
+    return render(request, "attendance_report.html", {"reports": reports})

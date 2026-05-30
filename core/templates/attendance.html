@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Attendance Tracking Agent</h1>
+        <p>Upload employee login/logout times to generate AI-powered performance reports and reliability scores.</p>
+        <div class="accent-line"></div>
+    </div>
+
+    <div class="grid-2" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 100%; max-width: 600px;">
+            <div class="card-header">
+                <div class="card-icon emerald">📊</div>
+                <div>
+                    <div class="card-title">Upload Timesheet</div>
+                    <div class="card-subtitle">Supported formats: .xlsx, .xls</div>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="{% url 'core:attendance_upload' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">
+                        Employee Timesheet <span class="required">*</span>
+                    </label>
+                    <div class="upload-zone" id="upload-zone-attendance">
+                        <input type="file" name="attendance_file" id="attendance-input" accept=".xlsx,.xls" required>
+                        <span class="upload-icon">📈</span>
+                        <div class="upload-text">
+                            <strong>Click to upload</strong> or drag and drop
+                        </div>
+                        <div class="upload-hint" id="file-label-attendance">Upload Excel file containing login and logout times</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg btn-block" id="submit-btn-attendance">
+                    <span class="spinner"></span>
+                    <span class="btn-text">🤖 Generate Attendance Report</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

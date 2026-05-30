@@ -20,4 +20,14 @@ urlpatterns = [
         views.success_view,
         name="success",
     ),
+    path(
+        "attendance/",
+        views.attendance_upload_view,
+        name="attendance_upload",
+    ),
+    path(
+        "attendance/report/",
+        views.attendance_report_view,
+        name="attendance_report",
+    ),
 ]

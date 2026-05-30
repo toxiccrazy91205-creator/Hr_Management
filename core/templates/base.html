@@ -923,7 +923,10 @@
                         <span>HR Agent</span> AI
                     </div>
                 </a>
-                <div class="nav-badge">Agentic Recruitment</div>
+                <div style="display: flex; gap: var(--space-4); align-items: center;">
+                    <a href="{% url 'core:dashboard' %}" class="nav-badge" style="text-decoration: none;">Recruitment</a>
+                    <a href="{% url 'core:attendance_upload' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary);">Attendance Tracker</a>
+                </div>
             </div>
         </nav>
 
@@ -981,10 +984,9 @@
         });
 
         // Upload zone drag & drop feedback
-        var uploadZone = document.querySelector('.upload-zone');
-        if (uploadZone) {
+        document.querySelectorAll('.upload-zone').forEach(function(uploadZone) {
             var fileInput = uploadZone.querySelector('input[type="file"]');
-            var fileLabel = document.getElementById('file-label');
+            var fileLabel = uploadZone.querySelector('.upload-hint');
 
             ['dragenter', 'dragover'].forEach(function(evt) {
                 uploadZone.addEventListener(evt, function(e) {
@@ -992,23 +994,32 @@
                     uploadZone.classList.add('drag-over');
                 });
             });
+            
             ['dragleave', 'drop'].forEach(function(evt) {
                 uploadZone.addEventListener(evt, function(e) {
                     e.preventDefault();
                     uploadZone.classList.remove('drag-over');
+                    
+                    if (evt === 'drop' && fileInput && e.dataTransfer.files.length > 0) {
+                        fileInput.files = e.dataTransfer.files;
+                        // manually dispatch change event
+                        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
                 });
             });
 
-            if (fileInput) {
+            if (fileInput && fileLabel) {
+                // If it's the attendance page, we want this default behavior.
+                // For the recruitment dashboard, its own script might override or supplement this.
                 fileInput.addEventListener('change', function() {
-                    if (this.files.length > 0 && fileLabel) {
+                    if (this.files.length > 0 && this.id !== 'resume-input') {
                         var names = Array.from(this.files).map(function(f) { return f.name; });
                         fileLabel.textContent = names.join(', ');
                         fileLabel.style.color = 'var(--accent-success)';
                     }
                 });
             }
-        }
+        });
 
         // Form submit loading state
         document.querySelectorAll('form').forEach(function(form) {
