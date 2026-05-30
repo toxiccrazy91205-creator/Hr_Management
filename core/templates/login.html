@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 400px; margin-top: 10vh;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Sign In</div>
+            <div class="card-subtitle">Access your HR or Employee portal</div>
+        </div>
+        
+        <div style="background: var(--bg-tertiary); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-md); padding: var(--space-3); margin-bottom: var(--space-4); font-size: var(--font-sm); color: var(--text-secondary);">
+            <strong>Demo Accounts:</strong><br>
+            <span style="color: var(--text-primary);">HR:</span> hr@company.com | admin123<br>
+            <span style="color: var(--text-primary);">Employee:</span> employee@company.com | pass123
+        </div>
+        
+        <form method="post" action="{% url 'core:login' %}">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-error" style="margin-bottom: var(--space-4);">
+                Invalid username or password.
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label class="form-label" for="id_username">Username</label>
+                <input type="text" name="username" class="form-input" id="id_username" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="id_password">Password</label>
+                <input type="password" name="password" class="form-input" id="id_password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: var(--space-6);">
+                Login
+            </button>
+        </form>
+        
+        <div style="margin-top: var(--space-4); text-align: center; color: var(--text-secondary);">
+            Don't have an account? <a href="{% url 'core:signup' %}" style="color: var(--accent-primary);">Sign up</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

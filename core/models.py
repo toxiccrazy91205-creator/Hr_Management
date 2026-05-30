@@ -5,6 +5,7 @@ Data models for the HR Recruitment System.
 """
 import uuid
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class JobPosting(models.Model):
@@ -89,3 +90,42 @@ class Candidate(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.match_score}% match"
+
+
+class EmployeeProfile(models.Model):
+    """Profile linked to the standard Django User model to support RBAC and HR data."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_hr = models.BooleanField(default=False, help_text="Designates whether this user is an HR admin.")
+    department = models.CharField(max_length=100, blank=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    leave_balance = models.PositiveIntegerField(default=0, help_text="Number of paid leave days available")
+    attendance_score = models.IntegerField(default=100, help_text="AI-assigned attendance score (0-100)")
+
+    def __str__(self):
+        role = "HR" if self.is_hr else "Employee"
+        return f"{self.user.username} ({role})"
+
+
+class CompanyPolicy(models.Model):
+    """Company policies stored for RAG usage by the Employee Support Agent."""
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Company Policies"
+
+    def __str__(self):
+        return self.title
+
+
+class FAQ(models.Model):
+    """Frequently Asked Questions stored for RAG usage."""
+    question = models.CharField(max_length=500)
+    answer = models.TextField()
+
+    class Meta:
+        verbose_name = "FAQ"
+
+    def __str__(self):
+        return self.question

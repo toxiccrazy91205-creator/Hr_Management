@@ -35,4 +35,10 @@ urlpatterns = [
         views.attendance_download_pdf_view,
         name="attendance_download_pdf",
     ),
+    path("login/", views.custom_login_view, name="login"),
+    path("signup/", views.signup_view, name="signup"),
+    path("logout/", views.custom_logout_view, name="logout"),
+    path("hr/manage/", views.hr_data_management_view, name="hr_manage_data"),
+    path("employee/chat/", views.employee_chat_view, name="employee_chat"),
+    path("api/chat/", views.api_chat_view, name="api_chat"),
 ]

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 400px; margin-top: 10vh;">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Create Account</div>
+            <div class="card-subtitle">Register as an Employee</div>
+        </div>
+        
+        <form method="post" action="{% url 'core:signup' %}">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small style="color: var(--text-muted); display: block; margin-top: var(--space-1);">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div style="color: var(--accent-danger); font-size: var(--font-sm); margin-top: var(--space-1);">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: var(--space-6);">
+                Sign Up
+            </button>
+        </form>
+        
+        <div style="margin-top: var(--space-4); text-align: center; color: var(--text-secondary);">
+            Already have an account? <a href="{% url 'core:login' %}" style="color: var(--accent-primary);">Log in</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('input, textarea, select').forEach(el => {
+        if(el.type !== 'submit' && el.type !== 'hidden') {
+            el.classList.add('form-input');
+        }
+    });
+</script>
+{% endblock %}

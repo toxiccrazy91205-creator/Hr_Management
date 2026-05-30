@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Support Chat{% endblock %}
+
+{% block content %}
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 70vh;
+        max-height: 800px;
+    }
+    .chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--space-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom: none;
+    }
+    .chat-message {
+        max-width: 80%;
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-md);
+        line-height: 1.5;
+    }
+    .chat-message.user {
+        align-self: flex-end;
+        background: var(--accent-primary);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+    .chat-message.agent {
+        align-self: flex-start;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-bottom-left-radius: 4px;
+        backdrop-filter: blur(10px);
+    }
+    .chat-input-area {
+        display: flex;
+        padding: var(--space-4);
+        background: var(--bg-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        gap: var(--space-3);
+    }
+    .chat-input-area input {
+        flex: 1;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border-radius: var(--radius-md);
+        padding: var(--space-3);
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .chat-input-area input:focus {
+        border-color: var(--accent-primary);
+    }
+</style>
+
+<div class="container" style="max-width: 800px;">
+    <div class="page-header" style="margin-bottom: var(--space-6);">
+        <h1>HR Support Agent</h1>
+        <p>Ask questions about your personal data, leave balances, or company policies.</p>
+        <div class="accent-line"></div>
+    </div>
+
+    <div class="chat-container shadow-sm">
+        <div class="chat-box" id="chatBox">
+            <div class="chat-message agent">
+                Hello <strong>{{ request.user.username }}</strong>! I am your AI HR Assistant. I can help you with company policies, FAQs, and your personal data (like salary and leave balance). How can I help you today?
+            </div>
+        </div>
+        <form id="chatForm" class="chat-input-area">
+            {% csrf_token %}
+            <input type="text" id="chatInput" placeholder="Type your question here..." required autocomplete="off">
+            <button type="submit" class="btn btn-primary" id="chatSubmitBtn">Send</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const chatBox = document.getElementById('chatBox');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const submitBtn = document.getElementById('chatSubmitBtn');
+
+    function appendMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-message ' + sender;
+        msgDiv.textContent = text;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        appendMessage(message, 'user');
+        chatInput.value = '';
+        submitBtn.disabled = true;
+        
+        // Show loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'chat-message agent';
+        loadingDiv.innerHTML = '<span style="opacity: 0.5;">Agent is typing...</span>';
+        chatBox.appendChild(loadingDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const response = await fetch("{% url 'core:api_chat' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+            
+            // Remove loading
+            chatBox.removeChild(loadingDiv);
+            
+            if (response.ok) {
+                appendMessage(data.response, 'agent');
+            } else {
+                appendMessage("Error: " + (data.error || "Something went wrong."), 'agent');
+            }
+        } catch (error) {
+            chatBox.removeChild(loadingDiv);
+            appendMessage("Network error. Please try again.", 'agent');
+        } finally {
+            submitBtn.disabled = false;
+            chatInput.focus();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobPosting, Candidate
+from .models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ
 
 
 class CandidateInline(admin.TabularInline):
@@ -24,3 +24,19 @@ class CandidateAdmin(admin.ModelAdmin):
     list_display = ("name", "email", "match_score", "status", "email_sent", "job")
     list_filter = ("status", "email_sent")
     search_fields = ("name", "email")
+
+
+@admin.register(EmployeeProfile)
+class EmployeeProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "is_hr", "department", "leave_balance")
+    list_filter = ("is_hr", "department")
+
+
+@admin.register(CompanyPolicy)
+class CompanyPolicyAdmin(admin.ModelAdmin):
+    list_display = ("title", "last_updated")
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ("question",)

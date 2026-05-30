@@ -924,8 +924,19 @@
                     </div>
                 </a>
                 <div style="display: flex; gap: var(--space-4); align-items: center;">
-                    <a href="{% url 'core:dashboard' %}" class="nav-badge" style="text-decoration: none;">Recruitment</a>
-                    <a href="{% url 'core:attendance_upload' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary);">Attendance Tracker</a>
+                    {% if user.is_authenticated %}
+                        {% if user.employeeprofile.is_hr %}
+                            <a href="{% url 'core:dashboard' %}" class="nav-badge" style="text-decoration: none;">Recruitment</a>
+                            <a href="{% url 'core:attendance_upload' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary);">Attendance</a>
+                            <a href="{% url 'core:hr_manage_data' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-success); color: var(--accent-success);">HR Manage</a>
+                        {% else %}
+                            <a href="{% url 'core:employee_chat' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary);">AI Chat</a>
+                        {% endif %}
+                        <a href="{% url 'core:logout' %}" style="text-decoration: none; color: var(--text-secondary); font-size: var(--font-sm);">Logout ({{ user.username }})</a>
+                    {% else %}
+                        <a href="{% url 'core:login' %}" style="text-decoration: none; color: var(--text-secondary); font-size: var(--font-sm);">Login</a>
+                        <a href="{% url 'core:signup' %}" style="text-decoration: none; color: var(--text-secondary); font-size: var(--font-sm);">Sign Up</a>
+                    {% endif %}
                 </div>
             </div>
         </nav>

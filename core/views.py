@@ -17,14 +17,23 @@ import traceback
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-from core.models import JobPosting, Candidate
+from core.models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ
+
+def is_hr_check(user):
+    return user.is_authenticated and hasattr(user, 'employeeprofile') and user.employeeprofile.is_hr
+
+def is_employee_check(user):
+    return user.is_authenticated and hasattr(user, 'employeeprofile') and not user.employeeprofile.is_hr
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +62,8 @@ def _save_uploaded_files(files) -> list[str]:
 # View 1: Dashboard — job form + resume upload
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def dashboard_view(request):
     """
     GET  → render the dashboard form (optionally pre-filled via ?resume=<job_id>).
@@ -210,6 +221,8 @@ def dashboard_view(request):
 # View 2: Approval — human-in-the-loop review
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def approval_view(request, job_id):
     """Display shortlisted candidates and drafted emails for HR approval."""
     job = get_object_or_404(JobPosting, pk=job_id)
@@ -224,6 +237,8 @@ def approval_view(request, job_id):
 # View 3: Approve and Send — resume the LangGraph
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def approve_and_send_view(request, job_id):
     """
     POST → Resume the LangGraph to execute the send_emails node,
@@ -263,6 +278,8 @@ def approve_and_send_view(request, job_id):
 # View 4: Success — final confirmation
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def success_view(request, job_id):
     """Display the final success page with sent-email summary."""
     job = get_object_or_404(JobPosting, pk=job_id)
@@ -277,6 +294,8 @@ def success_view(request, job_id):
 # View 5: Attendance Tracker — Upload timesheet
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def attendance_upload_view(request):
     """
     GET  → Render the upload form.
@@ -323,6 +342,8 @@ def attendance_upload_view(request):
 # View 6: Attendance Tracker — View report
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def attendance_report_view(request):
     """Display the AI-generated attendance report from session."""
     reports = request.session.get('attendance_reports', [])
@@ -333,6 +354,8 @@ def attendance_report_view(request):
 # View 7: Attendance Tracker — Download report as PDF
 # ──────────────────────────────────────────────────────────────────────────────
 
+@login_required
+@user_passes_test(is_hr_check)
 def attendance_download_pdf_view(request):
     """Download the attendance report from session as a PDF file."""
     reports = request.session.get('attendance_reports', [])
@@ -377,3 +400,132 @@ def attendance_download_pdf_view(request):
     doc.build(elements)
     
     return response
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 8: Authentication Views (Login, Signup, Logout)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def custom_login_view(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            if hasattr(user, 'employeeprofile') and user.employeeprofile.is_hr:
+                return redirect("core:dashboard")
+            return redirect("core:employee_chat")
+    else:
+        form = AuthenticationForm()
+    return render(request, "login.html", {"form": form})
+
+def signup_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Default new signups to Employee
+            EmployeeProfile.objects.create(
+                user=user,
+                is_hr=False,
+                department="General",
+                salary=50000.00,
+                leave_balance=10,
+                attendance_score=100
+            )
+            login(request, user)
+            return redirect("core:employee_chat")
+    else:
+        form = UserCreationForm()
+    return render(request, "signup.html", {"form": form})
+
+def custom_logout_view(request):
+    logout(request)
+    return redirect("core:login")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 9: HR Management (CRUD for Policies & FAQs)
+# ──────────────────────────────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_hr_check)
+def hr_data_management_view(request):
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "add_policy":
+            policy_id = request.POST.get("policy_id")
+            if policy_id:
+                CompanyPolicy.objects.filter(id=policy_id).update(
+                    title=request.POST.get("title"),
+                    content=request.POST.get("content")
+                )
+                messages.success(request, "Policy updated successfully.")
+            else:
+                CompanyPolicy.objects.create(
+                    title=request.POST.get("title"),
+                    content=request.POST.get("content")
+                )
+                messages.success(request, "Policy added successfully.")
+        elif action == "delete_policy":
+            policy_id = request.POST.get("policy_id")
+            if policy_id:
+                CompanyPolicy.objects.filter(id=policy_id).delete()
+                messages.success(request, "Policy deleted successfully.")
+        elif action == "add_faq":
+            faq_id = request.POST.get("faq_id")
+            if faq_id:
+                FAQ.objects.filter(id=faq_id).update(
+                    question=request.POST.get("question"),
+                    answer=request.POST.get("answer")
+                )
+                messages.success(request, "FAQ updated successfully.")
+            else:
+                FAQ.objects.create(
+                    question=request.POST.get("question"),
+                    answer=request.POST.get("answer")
+                )
+                messages.success(request, "FAQ added successfully.")
+        elif action == "delete_faq":
+            faq_id = request.POST.get("faq_id")
+            if faq_id:
+                FAQ.objects.filter(id=faq_id).delete()
+                messages.success(request, "FAQ deleted successfully.")
+        return redirect("core:hr_manage_data")
+        
+    policies = CompanyPolicy.objects.all()
+    faqs = FAQ.objects.all()
+    employees = EmployeeProfile.objects.filter(is_hr=False)
+    
+    return render(request, "hr_manage_data.html", {
+        "policies": policies,
+        "faqs": faqs,
+        "employees": employees
+    })
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 10: Employee Chatbot
+# ──────────────────────────────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_employee_check)
+def employee_chat_view(request):
+    return render(request, "employee_chat.html")
+
+@login_required
+@user_passes_test(is_employee_check)
+def api_chat_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            message = data.get("message", "")
+            
+            from ai_engine.support_agent import generate_support_response
+            response_text = generate_support_response(message, request.user.employeeprofile)
+            
+            return JsonResponse({"response": response_text})
+        except Exception as e:
+            logger.exception("Chat API Error")
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid method"}, status=405)
