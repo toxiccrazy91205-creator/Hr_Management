@@ -16,7 +16,7 @@
             The agent has processed the timesheet and generated the following insights.
         </div>
         <div class="action-bar-buttons">
-            <a href="{% url 'core:attendance_download_pdf' %}" class="btn btn-outline" style="border-color: var(--accent-success); color: var(--accent-success);">⬇️ Download PDF</a>
+            <a href="{% url 'core:attendance_download_pdf' %}" class="btn btn-outline" style="border-color: var(--accent-success); color: var(--accent-success);"><i data-lucide="download" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Download PDF</a>
             <a href="{% url 'core:attendance_upload' %}" class="btn btn-primary">Upload Another</a>
         </div>
     </div>
@@ -59,7 +59,7 @@
                     {% empty %}
                     <tr>
                         <td colspan="5" style="text-align: center; padding: var(--space-10) 0;">
-                            <div style="font-size: var(--font-3xl); margin-bottom: var(--space-4);">🤷‍♂️</div>
+                            <div style="margin-bottom: var(--space-4); display: flex; justify-content: center;"><i data-lucide="inbox" style="width:48px;height:48px;color:var(--text-muted);"></i></div>
                             <div class="card-title">No data to report</div>
                             <div class="card-subtitle">Ensure the uploaded Excel file contains valid login/logout data.</div>
                         </td>

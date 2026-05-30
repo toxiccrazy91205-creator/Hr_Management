@@ -17,36 +17,41 @@
            ════════════════════════════════════════════════════════════════════ */
 
         :root {
-            /* Color Palette — Deep navy + electric accents */
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #111827;
-            --bg-card: rgba(17, 24, 39, 0.7);
-            --bg-card-hover: rgba(30, 41, 59, 0.8);
-            --bg-glass: rgba(255, 255, 255, 0.03);
-            --bg-glass-hover: rgba(255, 255, 255, 0.06);
+            /* Linear Marketing Canvas Tokens */
+            --bg-primary: #010102; /* Canvas */
+            --bg-secondary: #0f1115; /* Surface 1 */
+            --bg-card: #0f1115; /* Surface 1 */
+            --bg-card-hover: #191b22; /* Surface 2 */
+            --bg-glass: #0f1115; 
+            --bg-glass-hover: #191b22;
 
-            --accent-primary: #6366f1;       /* Indigo */
-            --accent-primary-glow: rgba(99, 102, 241, 0.4);
-            --accent-secondary: #8b5cf6;     /* Violet */
-            --accent-success: #10b981;        /* Emerald */
-            --accent-success-glow: rgba(16, 185, 129, 0.3);
-            --accent-warning: #f59e0b;        /* Amber */
-            --accent-danger: #ef4444;         /* Red */
-            --accent-info: #06b6d4;           /* Cyan */
-            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
-            --accent-gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
-            --accent-gradient-cool: linear-gradient(135deg, #06b6d4, #6366f1);
+            --accent-primary: #5e6ad2;       /* Linear Lavender-Blue */
+            --accent-primary-hover: #828fff;
+            --accent-primary-focus: #5e69d1;
+            --accent-primary-glow: rgba(94, 106, 210, 0.2);
+            --accent-secondary: #5e6ad2;     
+            --accent-success: #27a644;       /* Semantic Success */
+            --accent-success-glow: rgba(39, 166, 68, 0.2);
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --accent-info: #06b6d4;
+            
+            /* Linear resists gradient/multi-color on marketing */
+            --accent-gradient: #5e6ad2;
+            --accent-gradient-warm: #5e6ad2;
+            --accent-gradient-cool: #5e6ad2;
 
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --text-accent: #a5b4fc;
+            --text-primary: #f7f8f8; /* Ink */
+            --text-secondary: #d0d6e0; /* Ink Muted */
+            --text-muted: #8a8f98; /* Ink Subtle */
+            --text-tertiary: #62666d; /* Ink Tertiary */
+            --text-accent: #828fff;
 
-            --border-subtle: rgba(255, 255, 255, 0.06);
-            --border-accent: rgba(99, 102, 241, 0.3);
+            --border-subtle: #23252a; /* Hairline */
+            --border-accent: #3a3f47; /* Hairline Strong */
 
             /* Typography */
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-family: 'Inter', SF Pro Display, -apple-system, system-ui, sans-serif;
             --font-xs: 0.75rem;
             --font-sm: 0.875rem;
             --font-base: 1rem;
@@ -54,8 +59,8 @@
             --font-xl: 1.25rem;
             --font-2xl: 1.5rem;
             --font-3xl: 1.875rem;
-            --font-4xl: 2.25rem;
-            --font-5xl: 3rem;
+            --font-4xl: 2.5rem; /* display-md */
+            --font-5xl: 3.5rem; /* display-lg */
 
             /* Spacing */
             --space-1: 0.25rem;
@@ -70,20 +75,20 @@
             --space-16: 4rem;
 
             /* Radius */
-            --radius-sm: 0.375rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-            --radius-2xl: 1.5rem;
+            --radius-sm: 6px;
+            --radius-md: 8px; /* Form inputs, buttons */
+            --radius-lg: 12px; /* Cards */
+            --radius-xl: 16px; /* Product panels */
+            --radius-2xl: 24px;
             --radius-full: 9999px;
 
-            /* Shadows */
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
-            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.5);
-            --shadow-glow: 0 0 40px var(--accent-primary-glow);
-            --shadow-glow-success: 0 0 40px var(--accent-success-glow);
+            /* Shadows - Linear depth is carried by surface ladder, no drop shadows on dark */
+            --shadow-sm: none;
+            --shadow-md: none;
+            --shadow-lg: none;
+            --shadow-xl: none;
+            --shadow-glow: none;
+            --shadow-glow-success: none;
 
             /* Transitions */
             --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -104,23 +109,13 @@
             font-family: var(--font-family);
             background: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
+            line-height: 1.5;
+            letter-spacing: -0.05px; /* Default body tracking */
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* ── Animated background ───────────────────────────────────────── */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 80% 50% at 20% 0%, rgba(99,102,241,0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,92,246,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(6,182,212,0.04) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
+        /* ── No Animated background for Linear (pure canvas) ── */
 
         /* ── Layout ────────────────────────────────────────────────────── */
         .app-wrapper {
@@ -165,34 +160,26 @@
         }
 
         .nav-brand-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-lg);
-            background: var(--accent-gradient);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            background: var(--accent-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: var(--font-xl);
-            box-shadow: var(--shadow-glow);
-            animation: pulse-glow 3s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px var(--accent-primary-glow); }
-            50% { box-shadow: 0 0 35px var(--accent-primary-glow); }
+            font-size: var(--font-lg);
+            color: white;
+            border: 1px solid var(--accent-primary-hover);
         }
 
         .nav-brand-text {
-            font-weight: 700;
-            font-size: var(--font-lg);
-            letter-spacing: -0.02em;
+            font-weight: 600;
+            font-size: var(--font-base);
+            letter-spacing: -0.4px;
         }
 
         .nav-brand-text span {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
         }
 
         .nav-badge {
@@ -221,13 +208,11 @@
 
         .page-header h1 {
             font-size: var(--font-4xl);
-            font-weight: 800;
-            letter-spacing: -0.03em;
+            font-weight: 600;
+            letter-spacing: -1.8px; /* Aggressive negative tracking */
+            line-height: 1.1;
             margin-bottom: var(--space-4);
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
         }
 
         .page-header p {
@@ -248,17 +233,17 @@
         /* ── Cards ─────────────────────────────────────────────────────── */
         .card {
             background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            padding: var(--space-8);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
             transition: all var(--transition-base);
+            /* Subtle white edge highlight */
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
         }
 
         .card:hover {
             border-color: var(--border-accent);
-            box-shadow: var(--shadow-lg);
+            background: var(--bg-card-hover);
         }
 
         .card-header {
@@ -285,9 +270,9 @@
         .card-icon.cyan { background: rgba(6,182,212,0.15); }
 
         .card-title {
-            font-size: var(--font-xl);
-            font-weight: 700;
-            letter-spacing: -0.02em;
+            font-size: 22px; /* card-title */
+            font-weight: 500;
+            letter-spacing: -0.4px;
         }
 
         .card-subtitle {
@@ -319,8 +304,8 @@
         .form-textarea,
         .form-select {
             width: 100%;
-            padding: var(--space-3) var(--space-4);
-            background: var(--bg-glass);
+            padding: 8px 12px;
+            background: var(--bg-secondary);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
             color: var(--text-primary);
@@ -333,9 +318,9 @@
         .form-input:focus,
         .form-textarea:focus,
         .form-select:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px var(--accent-primary-glow);
-            background: rgba(255,255,255,0.05);
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 2px rgba(94, 105, 209, 0.5); /* Primary focus ring */
+            background: var(--bg-card-hover);
         }
 
         .form-input::placeholder,
@@ -410,10 +395,10 @@
             align-items: center;
             justify-content: center;
             gap: var(--space-2);
-            padding: var(--space-3) var(--space-6);
+            padding: 8px 14px; /* Linear compact button spec */
             font-family: var(--font-family);
-            font-size: var(--font-sm);
-            font-weight: 600;
+            font-size: 14px; /* typography.button */
+            font-weight: 500;
             border-radius: var(--radius-md);
             border: 1px solid transparent;
             cursor: pointer;
@@ -422,29 +407,29 @@
             white-space: nowrap;
         }
 
-        .btn:active { transform: scale(0.97); }
+        .btn:active { transform: scale(0.98); }
 
         .btn-primary {
-            background: var(--accent-gradient);
+            background: var(--accent-primary);
             color: white;
             border: none;
-            box-shadow: 0 4px 15px var(--accent-primary-glow);
         }
 
         .btn-primary:hover {
-            box-shadow: 0 6px 25px var(--accent-primary-glow);
-            transform: translateY(-1px);
+            background: var(--accent-primary-hover);
+        }
+
+        .btn-primary:focus {
+            box-shadow: 0 0 0 2px rgba(94, 105, 209, 0.5);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: var(--accent-success);
             color: white;
-            box-shadow: 0 4px 15px var(--accent-success-glow);
         }
 
         .btn-success:hover {
-            box-shadow: 0 6px 25px var(--accent-success-glow);
-            transform: translateY(-1px);
+            background: #2cb34a;
         }
 
         .btn-danger {
@@ -453,21 +438,19 @@
         }
 
         .btn-outline {
-            background: transparent;
+            background: var(--bg-secondary);
             border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
+            color: var(--text-primary);
         }
 
         .btn-outline:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-            background: rgba(99,102,241,0.05);
+            border-color: var(--border-accent);
+            background: var(--bg-card-hover);
         }
 
         .btn-lg {
-            padding: var(--space-4) var(--space-8);
+            padding: 10px 18px;
             font-size: var(--font-base);
-            border-radius: var(--radius-lg);
         }
 
         .btn-block {
@@ -659,13 +642,10 @@
         }
 
         .stat-value {
-            font-size: var(--font-3xl);
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: var(--font-4xl);
+            font-weight: 600;
+            letter-spacing: -1.0px;
+            color: var(--text-primary);
         }
 
         .stat-label {
@@ -918,7 +898,7 @@
         <nav class="navbar" id="main-nav">
             <div class="container">
                 <a href="{% url 'core:dashboard' %}" class="nav-brand">
-                    <div class="nav-brand-icon">🤖</div>
+                    <div class="nav-brand-icon"><i data-lucide="bot" style="width:20px;height:20px;"></i></div>
                     <div class="nav-brand-text">
                         <span>HR Agent</span> AI
                     </div>
@@ -947,10 +927,10 @@
         <div class="container" style="margin-top: var(--space-6);">
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }}" id="alert-{{ forloop.counter }}">
-                {% if message.tags == 'success' %}✅
-                {% elif message.tags == 'error' %}❌
-                {% elif message.tags == 'warning' %}⚠️
-                {% else %}ℹ️{% endif %}
+                {% if message.tags == 'success' %}<i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>
+                {% elif message.tags == 'error' %}<i data-lucide="x-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>
+                {% elif message.tags == 'warning' %}<i data-lucide="alert-triangle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>
+                {% else %}<i data-lucide="info" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>{% endif %}
                 {{ message }}
             </div>
             {% endfor %}
@@ -989,7 +969,9 @@
                 if (details) {
                     details.classList.toggle('open');
                     if (chevron) {
-                        chevron.textContent = details.classList.contains('open') ? '▲' : '▼';
+                        var iconName = details.classList.contains('open') ? 'chevron-up' : 'chevron-down';
+                        chevron.innerHTML = '<i data-lucide="' + iconName + '" style="width:16px;height:16px;color:var(--text-muted);"></i>';
+                        if (window.lucide) window.lucide.createIcons();
                     }
                 }
             });
@@ -1042,6 +1024,14 @@
                     btn.disabled = true;
                 }
             });
+        });
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
         });
     </script>
 </body>

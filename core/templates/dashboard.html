@@ -15,7 +15,7 @@
         <!-- Main Form Card -->
         <div class="card">
             <div class="card-header">
-                <div class="card-icon indigo">{% if resume_job %}🔄{% else %}📋{% endif %}</div>
+                <div class="card-icon indigo">{% if resume_job %}<i data-lucide="refresh-cw"></i>{% else %}<i data-lucide="clipboard-list"></i>{% endif %}</div>
                 <div>
                     <div class="card-title">{% if resume_job %}Resume Pipeline — {{ resume_job.title }}{% else %}New Recruitment Pipeline{% endif %}</div>
                     <div class="card-subtitle">{% if resume_job %}Pick up where you left off — just re-upload resumes and go{% else %}Fill in the job details and upload candidate resumes{% endif %}</div>
@@ -24,7 +24,7 @@
 
             {% if resume_job %}
             <div class="alert alert-info" style="margin-bottom: var(--space-6);">
-                ℹ️ Resuming draft pipeline. Your previous job details are pre-filled below. Upload resumes and submit to retry.
+                <i data-lucide="info" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Resuming draft pipeline. Your previous job details are pre-filled below. Upload resumes and submit to retry.
             </div>
             {% endif %}
 
@@ -80,7 +80,7 @@
                     <div class="upload-zone" id="upload-zone">
                         <input type="file" name="resumes" id="resume-input" multiple
                                accept=".pdf,.docx,.doc,.txt" required>
-                        <span class="upload-icon">📄</span>
+                        <span class="upload-icon"><i data-lucide="file-text" style="width:32px;height:32px;"></i></span>
                         <div class="upload-text">
                             <strong>Click to upload</strong> or drag and drop
                         </div>
@@ -90,7 +90,7 @@
 
                 <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">
                     <span class="spinner"></span>
-                    <span class="btn-text">{% if resume_job %}🔄 Retry AI Screening Pipeline{% else %}🚀 Launch AI Screening Pipeline{% endif %}</span>
+                    <span class="btn-text" style="display:flex;align-items:center;">{% if resume_job %}<i data-lucide="refresh-cw" style="width:18px;height:18px;margin-right:8px;"></i> Retry AI Screening Pipeline{% else %}<i data-lucide="rocket" style="width:18px;height:18px;margin-right:8px;"></i> Launch AI Screening Pipeline{% endif %}</span>
                 </button>
             </form>
         </div>
@@ -100,7 +100,7 @@
             <!-- How It Works -->
             <div class="card" style="margin-bottom: var(--space-6);">
                 <div class="card-header">
-                    <div class="card-icon cyan">⚡</div>
+                    <div class="card-icon cyan"><i data-lucide="zap"></i></div>
                     <div>
                         <div class="card-title">How It Works</div>
                     </div>
@@ -128,7 +128,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
-                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">4</div>
+                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-success); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">4</div>
                         <div>
                             <div style="font-weight: 600; font-size: var(--font-sm);">You Approve</div>
                             <div style="font-size: var(--font-xs); color: var(--text-muted);">Review shortlist & emails before anything is sent</div>
@@ -140,7 +140,7 @@
             <!-- Uploaded Resumes Panel (dynamic, JS-powered) -->
             <div class="card" id="resume-panel" style="margin-bottom: var(--space-6); display: none;">
                 <div class="card-header">
-                    <div class="card-icon emerald">📑</div>
+                    <div class="card-icon emerald"><i data-lucide="files"></i></div>
                     <div style="flex: 1;">
                         <div class="card-title" style="display: flex; align-items: center; gap: var(--space-3);">
                             Uploaded Resumes
@@ -165,7 +165,7 @@
                     text-align: right;
                 ">
                     <button type="button" id="clear-all-btn" class="btn btn-outline" style="font-size: var(--font-xs); padding: var(--space-2) var(--space-4);">
-                        🗑 Clear All
+                        <i data-lucide="trash-2" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Clear All
                     </button>
                 </div>
             </div>
@@ -174,7 +174,7 @@
             {% if recent_jobs %}
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon amber">📁</div>
+                    <div class="card-icon amber"><i data-lucide="folder"></i></div>
                     <div>
                         <div class="card-title">Recent Pipelines</div>
                     </div>
@@ -191,7 +191,7 @@
                         {% elif job.status == 'approved' %}
                             <a href="{% url 'core:success' job_id=job.id %}" class="btn btn-outline" style="font-size: var(--font-xs);">View</a>
                         {% elif job.status == 'draft' or job.status == 'screening' %}
-                            <a href="{% url 'core:dashboard' %}?resume={{ job.id }}" class="btn btn-outline" style="font-size: var(--font-xs); border-color: var(--accent-warning); color: var(--accent-warning);">🔄 Resume</a>
+                            <a href="{% url 'core:dashboard' %}?resume={{ job.id }}" class="btn btn-outline" style="font-size: var(--font-xs); border-color: var(--accent-warning); color: var(--accent-warning);"><i data-lucide="refresh-cw" style="width:12px;height:12px;margin-right:4px;"></i> Resume</a>
                         {% else %}
                             <span class="status-badge status-draft">{{ job.get_status_display }}</span>
                         {% endif %}
@@ -218,10 +218,10 @@
 
     function getFileIcon(name) {
         var ext = name.split('.').pop().toLowerCase();
-        if (ext === 'pdf') return '📕';
-        if (ext === 'docx' || ext === 'doc') return '📘';
-        if (ext === 'txt') return '📝';
-        return '📄';
+        var icon = 'file-text';
+        if (ext === 'pdf') icon = 'file-type-pdf';
+        else if (ext === 'docx' || ext === 'doc') icon = 'file-type-2';
+        return '<i data-lucide="' + icon + '" style="width:16px;height:16px;"></i>';
     }
 
     function renderList() {
@@ -254,7 +254,10 @@
                 info.style.gap = 'var(--space-3)';
 
                 var icon = document.createElement('span');
-                icon.textContent = getFileIcon(f.name);
+                icon.innerHTML = getFileIcon(f.name);
+                icon.style.display = 'flex';
+                icon.style.alignItems = 'center';
+                icon.style.flexShrink = '0';
                 icon.style.fontSize = 'var(--font-lg)';
                 icon.style.flexShrink = '0';
 
@@ -297,6 +300,10 @@
                 li.appendChild(removeBtn);
                 fileList.appendChild(li);
             })(i);
+        }
+        // Initialize lucide icons for new elements
+        if (window.lucide) {
+            window.lucide.createIcons();
         }
     }
 

@@ -13,7 +13,7 @@
     <div class="grid-2" style="display: flex; justify-content: center;">
         <div class="card" style="width: 100%; max-width: 600px;">
             <div class="card-header">
-                <div class="card-icon warning">📈</div>
+                <div class="card-icon warning"><i data-lucide="trending-up"></i></div>
                 <div>
                     <div class="card-title">Upload Performance Data</div>
                     <div class="card-subtitle">Supported formats: .xlsx, .xls</div>
@@ -33,7 +33,7 @@
                     </label>
                     <div class="upload-zone" id="upload-zone-performance">
                         <input type="file" name="performance_excel" id="performance-input" accept=".xlsx,.xls" required>
-                        <span class="upload-icon">📄</span>
+                        <span class="upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px;"></i></span>
                         <div class="upload-text">
                             <strong>Click to upload</strong> or drag and drop
                         </div>
@@ -43,7 +43,7 @@
 
                 <button type="submit" class="btn btn-warning btn-lg btn-block" id="submit-btn-performance">
                     <span class="spinner" style="display: none;"></span>
-                    <span class="btn-text">🤖 Generate Bulk Reviews</span>
+                    <span class="btn-text" style="display:flex;align-items:center;"><i data-lucide="bot" style="width:18px;height:18px;margin-right:8px;"></i> Generate Bulk Reviews</span>
                 </button>
             </form>
         </div>
