@@ -13,8 +13,6 @@ env
 .venv
 .env
 .env.local
-db.sqlite3
-db.sqlite3-journal
 chroma_db
 media/resumes
 *.log

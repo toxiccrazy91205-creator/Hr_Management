@@ -25,8 +25,11 @@ COPY . /app/
 # Create necessary directories
 RUN mkdir -p /app/media/resumes /app/chroma_db
 
-# Expose the Django dev server port
+# Collect static files during build
+RUN python manage.py collectstatic --noinput
+
+# Expose the port
 EXPOSE 8000
 
-# Run migrations and start the server
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]
+# Run migrations and start the server using Gunicorn
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn hr_agent_project.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
