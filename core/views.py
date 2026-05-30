@@ -17,7 +17,12 @@ import traceback
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 from core.models import JobPosting, Candidate
 
@@ -322,3 +327,53 @@ def attendance_report_view(request):
     """Display the AI-generated attendance report from session."""
     reports = request.session.get('attendance_reports', [])
     return render(request, "attendance_report.html", {"reports": reports})
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 7: Attendance Tracker — Download report as PDF
+# ──────────────────────────────────────────────────────────────────────────────
+
+def attendance_download_pdf_view(request):
+    """Download the attendance report from session as a PDF file."""
+    reports = request.session.get('attendance_reports', [])
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="attendance_report.pdf"'
+    
+    doc = SimpleDocTemplate(response, pagesize=landscape(letter))
+    elements = []
+    
+    styles = getSampleStyleSheet()
+    title_style = styles['Heading1']
+    elements.append(Paragraph("AI Attendance Report", title_style))
+    elements.append(Spacer(1, 20))
+    
+    data = [['Employee Name', 'Total Hours', 'Leaves Taken', 'AI Score', 'Agent Feedback']]
+    
+    for report in reports:
+        data.append([
+            report.get('name', ''),
+            str(report.get('total_hours', '')),
+            str(report.get('leaves_taken', '')),
+            str(report.get('ai_score', '')),
+            Paragraph(str(report.get('ai_feedback', '')), styles['Normal'])
+        ])
+        
+    table = Table(data, colWidths=[120, 80, 80, 70, 370])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6366f1')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f1f5f9')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#0a0e1a')),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    
+    elements.append(table)
+    doc.build(elements)
+    
+    return response

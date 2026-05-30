@@ -30,4 +30,9 @@ urlpatterns = [
         views.attendance_report_view,
         name="attendance_report",
     ),
+    path(
+        "attendance/download/",
+        views.attendance_download_pdf_view,
+        name="attendance_download_pdf",
+    ),
 ]

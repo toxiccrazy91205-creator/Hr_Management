@@ -16,7 +16,8 @@
             The agent has processed the timesheet and generated the following insights.
         </div>
         <div class="action-bar-buttons">
-            <a href="{% url 'core:attendance_upload' %}" class="btn btn-outline">Upload Another</a>
+            <a href="{% url 'core:attendance_download_pdf' %}" class="btn btn-outline" style="border-color: var(--accent-success); color: var(--accent-success);">⬇️ Download PDF</a>
+            <a href="{% url 'core:attendance_upload' %}" class="btn btn-primary">Upload Another</a>
         </div>
     </div>
 
