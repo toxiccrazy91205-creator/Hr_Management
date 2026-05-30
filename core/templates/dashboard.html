@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>AI Recruitment Dashboard</h1>
+        <p>Upload resumes and define your ideal candidate. Our AI agents will screen, schedule, and draft communications automatically.</p>
+        <div class="accent-line"></div>
+    </div>
+
+    <div class="grid-2">
+        <!-- Main Form Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon indigo">{% if resume_job %}🔄{% else %}📋{% endif %}</div>
+                <div>
+                    <div class="card-title">{% if resume_job %}Resume Pipeline — {{ resume_job.title }}{% else %}New Recruitment Pipeline{% endif %}</div>
+                    <div class="card-subtitle">{% if resume_job %}Pick up where you left off — just re-upload resumes and go{% else %}Fill in the job details and upload candidate resumes{% endif %}</div>
+                </div>
+            </div>
+
+            {% if resume_job %}
+            <div class="alert alert-info" style="margin-bottom: var(--space-6);">
+                ℹ️ Resuming draft pipeline. Your previous job details are pre-filled below. Upload resumes and submit to retry.
+            </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" id="recruitment-form">
+                {% csrf_token %}
+                {% if resume_job %}
+                <input type="hidden" name="resume_job_id" value="{{ resume_job.id }}">
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label" for="job_title">
+                        Job Title / Role <span class="required">*</span>
+                    </label>
+                    <input type="text" class="form-input" id="job_title" name="job_title"
+                           placeholder="e.g. Senior Backend Engineer"
+                           value="{{ resume_job.title|default:'' }}"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="job_description">
+                        Job Description <span class="required">*</span>
+                    </label>
+                    <textarea class="form-textarea" id="job_description" name="job_description"
+                              placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..."
+                              required>{{ resume_job.description|default:'' }}</textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="required_skills">
+                            Required Skills <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-input" id="required_skills" name="required_skills"
+                               placeholder="e.g. Python, Django, REST APIs, PostgreSQL"
+                               value="{{ resume_job.required_skills|default:'' }}"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="experience_years">
+                            Min. Experience (years)
+                        </label>
+                        <input type="number" class="form-input" id="experience_years" name="experience_years"
+                               placeholder="e.g. 3" min="0" max="50" value="{% if resume_job %}{{ resume_job.experience_years }}{% else %}0{% endif %}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Upload Resumes <span class="required">*</span>
+                    </label>
+                    <div class="upload-zone" id="upload-zone">
+                        <input type="file" name="resumes" id="resume-input" multiple
+                               accept=".pdf,.docx,.doc,.txt" required>
+                        <span class="upload-icon">📄</span>
+                        <div class="upload-text">
+                            <strong>Click to upload</strong> or drag and drop
+                        </div>
+                        <div class="upload-hint" id="file-label">PDF, DOCX, DOC, or TXT — up to 50 files</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">{% if resume_job %}🔄 Retry AI Screening Pipeline{% else %}🚀 Launch AI Screening Pipeline{% endif %}</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Sidebar: Recent Jobs & How It Works -->
+        <div>
+            <!-- How It Works -->
+            <div class="card" style="margin-bottom: var(--space-6);">
+                <div class="card-header">
+                    <div class="card-icon cyan">⚡</div>
+                    <div>
+                        <div class="card-title">How It Works</div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">1</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: var(--font-sm);">Ingest & Vectorize</div>
+                            <div style="font-size: var(--font-xs); color: var(--text-muted);">Resumes are parsed, chunked, and stored in ChromaDB</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">2</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: var(--font-sm);">AI Screening</div>
+                            <div style="font-size: var(--font-xs); color: var(--text-muted);">RAG retrieval + LLM evaluates skill-match scores</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">3</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: var(--font-sm);">Schedule & Draft</div>
+                            <div style="font-size: var(--font-xs); color: var(--text-muted);">AI assigns time slots and drafts personalized emails</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">4</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: var(--font-sm);">You Approve</div>
+                            <div style="font-size: var(--font-xs); color: var(--text-muted);">Review shortlist & emails before anything is sent</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uploaded Resumes Panel (dynamic, JS-powered) -->
+            <div class="card" id="resume-panel" style="margin-bottom: var(--space-6); display: none;">
+                <div class="card-header">
+                    <div class="card-icon emerald">📑</div>
+                    <div style="flex: 1;">
+                        <div class="card-title" style="display: flex; align-items: center; gap: var(--space-3);">
+                            Uploaded Resumes
+                            <span id="resume-count-badge" style="
+                                background: var(--accent-gradient);
+                                color: white;
+                                font-size: var(--font-xs);
+                                font-weight: 700;
+                                padding: 2px 10px;
+                                border-radius: var(--radius-full);
+                                min-width: 24px;
+                                text-align: center;
+                            ">0</span>
+                        </div>
+                        <div class="card-subtitle">Files ready for AI processing</div>
+                    </div>
+                </div>
+                <ul id="resume-file-list" class="job-list" style="max-height: 320px; overflow-y: auto;"></ul>
+                <div id="resume-clear-bar" style="
+                    padding: var(--space-3) var(--space-5);
+                    border-top: 1px solid var(--border-subtle);
+                    text-align: right;
+                ">
+                    <button type="button" id="clear-all-btn" class="btn btn-outline" style="font-size: var(--font-xs); padding: var(--space-2) var(--space-4);">
+                        🗑 Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Jobs -->
+            {% if recent_jobs %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon amber">📁</div>
+                    <div>
+                        <div class="card-title">Recent Pipelines</div>
+                    </div>
+                </div>
+                <ul class="job-list">
+                    {% for job in recent_jobs %}
+                    <li class="job-list-item">
+                        <div class="job-info">
+                            <span class="job-title-text">{{ job.title }}</span>
+                            <span class="job-date">{{ job.created_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                        {% if job.status == 'pending_approval' %}
+                            <a href="{% url 'core:approval' job_id=job.id %}" class="btn btn-outline" style="font-size: var(--font-xs);">Review</a>
+                        {% elif job.status == 'approved' %}
+                            <a href="{% url 'core:success' job_id=job.id %}" class="btn btn-outline" style="font-size: var(--font-xs);">View</a>
+                        {% elif job.status == 'draft' or job.status == 'screening' %}
+                            <a href="{% url 'core:dashboard' %}?resume={{ job.id }}" class="btn btn-outline" style="font-size: var(--font-xs); border-color: var(--accent-warning); color: var(--accent-warning);">🔄 Resume</a>
+                        {% else %}
+                            <span class="status-badge status-draft">{{ job.get_status_display }}</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var fileInput = document.getElementById('resume-input');
+    var panel = document.getElementById('resume-panel');
+    var fileList = document.getElementById('resume-file-list');
+    var countBadge = document.getElementById('resume-count-badge');
+    var clearBtn = document.getElementById('clear-all-btn');
+    var fileLabel = document.getElementById('file-label');
+
+    // We keep a DataTransfer to allow individual removal
+    var dataTransfer = new DataTransfer();
+
+    function getFileIcon(name) {
+        var ext = name.split('.').pop().toLowerCase();
+        if (ext === 'pdf') return '📕';
+        if (ext === 'docx' || ext === 'doc') return '📘';
+        if (ext === 'txt') return '📝';
+        return '📄';
+    }
+
+    function renderList() {
+        var files = dataTransfer.files;
+        fileList.innerHTML = '';
+        countBadge.textContent = files.length;
+
+        if (files.length === 0) {
+            panel.style.display = 'none';
+            fileLabel.textContent = 'PDF, DOCX, DOC, or TXT — up to 50 files';
+            fileLabel.style.color = '';
+            return;
+        }
+
+        panel.style.display = '';
+        fileLabel.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
+        fileLabel.style.color = 'var(--accent-success)';
+
+        for (var i = 0; i < files.length; i++) {
+            (function(idx) {
+                var f = files[idx];
+                var li = document.createElement('li');
+                li.className = 'job-list-item';
+                li.style.animation = 'fadeIn 0.25s ease';
+
+                var info = document.createElement('div');
+                info.className = 'job-info';
+                info.style.flexDirection = 'row';
+                info.style.alignItems = 'center';
+                info.style.gap = 'var(--space-3)';
+
+                var icon = document.createElement('span');
+                icon.textContent = getFileIcon(f.name);
+                icon.style.fontSize = 'var(--font-lg)';
+                icon.style.flexShrink = '0';
+
+                var nameWrap = document.createElement('div');
+                var nameEl = document.createElement('span');
+                nameEl.className = 'job-title-text';
+                nameEl.textContent = f.name;
+                nameEl.style.fontSize = 'var(--font-sm)';
+                nameEl.style.wordBreak = 'break-all';
+
+                var sizeEl = document.createElement('span');
+                sizeEl.className = 'job-date';
+                var kb = (f.size / 1024).toFixed(1);
+                sizeEl.textContent = kb > 1024 ? (f.size / 1048576).toFixed(1) + ' MB' : kb + ' KB';
+
+                nameWrap.appendChild(nameEl);
+                nameWrap.appendChild(document.createElement('br'));
+                nameWrap.appendChild(sizeEl);
+                info.appendChild(icon);
+                info.appendChild(nameWrap);
+
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.innerHTML = '✕';
+                removeBtn.title = 'Remove this file';
+                removeBtn.style.cssText = 'background:none;border:1px solid var(--border-subtle);color:var(--text-muted);width:28px;height:28px;border-radius:var(--radius-full);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all var(--transition-fast);flex-shrink:0;';
+                removeBtn.onmouseenter = function() { this.style.borderColor='var(--accent-danger)'; this.style.color='var(--accent-danger)'; };
+                removeBtn.onmouseleave = function() { this.style.borderColor='var(--border-subtle)'; this.style.color='var(--text-muted)'; };
+                removeBtn.addEventListener('click', function() {
+                    var newDt = new DataTransfer();
+                    for (var j = 0; j < dataTransfer.files.length; j++) {
+                        if (j !== idx) newDt.items.add(dataTransfer.files[j]);
+                    }
+                    dataTransfer = newDt;
+                    fileInput.files = dataTransfer.files;
+                    renderList();
+                });
+
+                li.appendChild(info);
+                li.appendChild(removeBtn);
+                fileList.appendChild(li);
+            })(i);
+        }
+    }
+
+    fileInput.addEventListener('change', function() {
+        // Append new files to existing selection
+        for (var i = 0; i < this.files.length; i++) {
+            dataTransfer.items.add(this.files[i]);
+        }
+        this.files = dataTransfer.files;
+        renderList();
+    });
+
+    clearBtn.addEventListener('click', function() {
+        dataTransfer = new DataTransfer();
+        fileInput.files = dataTransfer.files;
+        renderList();
+    });
+})();
+</script>
+{% endblock %}

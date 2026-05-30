@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Review & Approve — {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>Review & Approve</h1>
+        <p>The AI pipeline has completed screening. Review the shortlisted candidates and their drafted emails before sending.</p>
+        <div class="accent-line"></div>
+    </div>
+
+    <!-- Job Summary Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ candidates|length }}</div>
+            <div class="stat-label">Candidates Shortlisted</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                {% with candidates|length as total %}
+                    {% widthratio total 1 1 %}
+                {% endwith %}
+            </div>
+            <div class="stat-label">Emails Drafted</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                <span class="status-badge status-pending" style="font-size: var(--font-sm);">⏳ Pending</span>
+            </div>
+            <div class="stat-label">Approval Status</div>
+        </div>
+    </div>
+
+    <!-- Job Details Banner -->
+    <div class="card section">
+        <div class="card-header">
+            <div class="card-icon indigo">💼</div>
+            <div>
+                <div class="card-title">{{ job.title }}</div>
+                <div class="card-subtitle">
+                    {{ job.required_skills }} &middot; {{ job.experience_years }}+ years experience
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidates Table View -->
+    {% if candidates %}
+    <div class="section">
+        <h2 class="section-title">📊 Shortlisted Candidates</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Match Score</th>
+                        <th>Matched Skills</th>
+                        <th>Interview Slot</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in candidates %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">{{ c.name }}</div>
+                            <div style="font-size: var(--font-xs); color: var(--text-muted);">
+                                {{ c.email|default:"No email found" }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if c.match_score >= 75 %}
+                                <span class="score-badge score-high">🟢 {{ c.match_score }}%</span>
+                            {% elif c.match_score >= 50 %}
+                                <span class="score-badge score-medium">🟡 {{ c.match_score }}%</span>
+                            {% else %}
+                                <span class="score-badge score-low">🔴 {{ c.match_score }}%</span>
+                            {% endif %}
+                        </td>
+                        <td style="max-width: 250px;">
+                            <span style="font-size: var(--font-xs); color: var(--text-secondary);">
+                                {{ c.matched_skills|default:"—" }}
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap;">
+                            <span style="font-size: var(--font-sm);">🗓 {{ c.interview_slot|default:"TBD" }}</span>
+                        </td>
+                        <td>
+                            {% if c.email %}
+                                <span class="status-badge status-approved">✓ Found</span>
+                            {% else %}
+                                <span class="status-badge status-draft">✗ Missing</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Email Drafts — Expandable Cards -->
+    <div class="section">
+        <h2 class="section-title">✉️ Drafted Emails</h2>
+        {% for c in candidates %}
+        <div class="candidate-card">
+            <div class="candidate-header">
+                <div class="candidate-info">
+                    <div class="candidate-avatar">
+                        {{ c.name|truncatechars:2|upper }}
+                    </div>
+                    <div>
+                        <div class="candidate-name">{{ c.name }}</div>
+                        <div class="candidate-email">{{ c.email|default:"No email" }}</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                    {% if c.match_score >= 75 %}
+                        <span class="score-badge score-high">{{ c.match_score }}%</span>
+                    {% elif c.match_score >= 50 %}
+                        <span class="score-badge score-medium">{{ c.match_score }}%</span>
+                    {% else %}
+                        <span class="score-badge score-low">{{ c.match_score }}%</span>
+                    {% endif %}
+                    <span class="chevron" style="color: var(--text-muted); font-size: var(--font-xs);">▼</span>
+                </div>
+            </div>
+            <div class="candidate-details">
+                <div class="detail-row">
+                    <span class="detail-label">Interview Slot</span>
+                    <span class="detail-value">🗓 {{ c.interview_slot|default:"TBD" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Resume Source</span>
+                    <span class="detail-value">📄 {{ c.resume_source|default:"—" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Matched Skills</span>
+                    <span class="detail-value">{{ c.matched_skills|default:"—" }}</span>
+                </div>
+                {% if c.drafted_email %}
+                <div style="margin-top: var(--space-4);">
+                    <div class="detail-label" style="margin-bottom: var(--space-2);">📧 Email Draft</div>
+                    <div class="email-preview">{{ c.drafted_email }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Approval Action Bar -->
+    <div class="action-bar">
+        <div class="action-bar-text">
+            <strong>{{ candidates|length }}</strong> candidate(s) will receive interview invitation emails upon approval.
+        </div>
+        <div class="action-bar-buttons">
+            <a href="{% url 'core:dashboard' %}" class="btn btn-outline">
+                ← Back to Dashboard
+            </a>
+            <form method="post" action="{% url 'core:approve_and_send' job_id=job.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-lg" id="approve-btn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">✅ Approve & Send Emails</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No candidates -->
+    <div class="card" style="text-align: center; padding: var(--space-16);">
+        <div style="font-size: 64px; margin-bottom: var(--space-6);">🤷</div>
+        <h2 style="margin-bottom: var(--space-4); color: var(--text-secondary);">No Candidates Shortlisted</h2>
+        <p style="color: var(--text-muted); margin-bottom: var(--space-8);">
+            The AI could not find suitable matches for this role. Try uploading more resumes or adjusting the requirements.
+        </p>
+        <a href="{% url 'core:dashboard' %}" class="btn btn-primary">← Back to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
