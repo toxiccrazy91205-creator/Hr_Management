@@ -39,6 +39,9 @@ urlpatterns = [
     path("signup/", views.signup_view, name="signup"),
     path("logout/", views.custom_logout_view, name="logout"),
     path("hr/manage/", views.hr_data_management_view, name="hr_manage_data"),
+    path("performance/dashboard/", views.hr_performance_dashboard_view, name="hr_performance_dashboard"),
+    path("performance/report/", views.view_performance_report_view, name="view_performance_report"),
+    path("performance/download-pdf/", views.performance_download_pdf_view, name="performance_download_pdf"),
     path("employee/chat/", views.employee_chat_view, name="employee_chat"),
     path("api/chat/", views.api_chat_view, name="api_chat"),
 ]

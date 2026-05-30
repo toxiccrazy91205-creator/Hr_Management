@@ -27,7 +27,7 @@ from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-from core.models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ
+from core.models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ, PerformanceRecord
 
 def is_hr_check(user):
     return user.is_authenticated and hasattr(user, 'employeeprofile') and user.employeeprofile.is_hr
@@ -529,3 +529,198 @@ def api_chat_view(request):
             logger.exception("Chat API Error")
             return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Invalid method"}, status=405)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 11: Performance Review Dashboard (Bulk Upload)
+# ──────────────────────────────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_hr_check)
+def hr_performance_dashboard_view(request):
+    """Handles global Excel upload for bulk Performance Reviews."""
+    if request.method == "POST":
+        review_period = request.POST.get("review_period")
+        excel_file = request.FILES.get("performance_excel")
+        
+        try:
+            import pandas as pd
+            if not excel_file:
+                raise ValueError("No Excel file uploaded.")
+                
+            df = pd.read_excel(excel_file)
+            
+            # Flexible identifier column matching
+            identifier_col = None
+            is_id = False
+            for col in df.columns:
+                col_lower = col.lower()
+                if 'email' in col_lower or 'username' in col_lower or 'name' in col_lower:
+                    identifier_col = col
+                    break
+                elif 'id' == col_lower or 'employee id' in col_lower:
+                    identifier_col = col
+                    is_id = True
+                    break
+            
+            if not identifier_col:
+                raise ValueError("Excel file must contain an 'Employee Name', 'Username', 'Email', or 'Employee ID' column to identify employees.")
+            
+            processed_record_ids = []
+            
+            for index, row in df.iterrows():
+                identifier = str(row[identifier_col]).strip()
+                
+                # Try to find the employee
+                employee = None
+                try:
+                    if is_id and identifier.replace('.','',1).isdigit():
+                        employee = EmployeeProfile.objects.get(id=int(float(identifier)), is_hr=False)
+                    elif '@' in identifier:
+                        employee = EmployeeProfile.objects.get(user__email=identifier, is_hr=False)
+                    else:
+                        employee = EmployeeProfile.objects.get(user__username=identifier, is_hr=False)
+                except EmployeeProfile.DoesNotExist:
+                    pass # We will auto-create below
+                
+                # Auto-create the employee if they don't exist in the DB (great for testing arbitrary Excel files)
+                if not employee:
+                    from django.contrib.auth.models import User
+                    
+                    # Try to get an actual name if the identifier was an ID
+                    display_name = str(identifier)
+                    if is_id:
+                        for col in row.index:
+                            if 'name' in col.lower():
+                                display_name = str(row[col])
+                                break
+                                
+                    safe_username = str(display_name).replace(" ", "_").lower()
+                    if not safe_username:
+                        continue
+                        
+                    # Handle case where user might already exist but no EmployeeProfile
+                    try:
+                        user = User.objects.get(username=safe_username)
+                    except User.DoesNotExist:
+                        user = User.objects.create(username=safe_username, email=f"{safe_username}@demo.com", first_name=str(display_name))
+                        
+                    employee, _ = EmployeeProfile.objects.get_or_create(
+                        user=user,
+                        defaults={'is_hr': False, 'department': 'General'}
+                    )
+                
+                # Process with LLM
+                from ai_engine.performance_agent import generate_performance_review
+                # Convert row to dict
+                row_dict = row.to_dict()
+                row_data_str = ", ".join([f"{k}: {v}" for k, v in row_dict.items()])
+                
+                result = generate_performance_review(
+                    employee_profile=employee,
+                    row_data=row_data_str
+                )
+                
+                # Save the record
+                record = PerformanceRecord.objects.create(
+                    employee=employee,
+                    review_period=review_period,
+                    kpi_data=row_data_str, # Store row data here
+                    task_completion_rate=0.0, # Deprecated
+                    manager_feedback="See Excel Data", # Deprecated
+                    performance_score=result.get("performance_score"),
+                    kpi_achievement_percent=result.get("kpi_achievement_percent"),
+                    strengths=result.get("strengths"),
+                    areas_for_improvement=result.get("areas_for_improvement"),
+                    recommended_actions=result.get("recommended_actions"),
+                )
+                processed_record_ids.append(record.id)
+            
+            if not processed_record_ids:
+                raise ValueError("No matching employees found in the Excel file.")
+                
+            # Store processed IDs in session to display them on the report page
+            request.session['latest_performance_records'] = processed_record_ids
+            
+            messages.success(request, f"Successfully generated {len(processed_record_ids)} performance reviews!")
+            return redirect("core:view_performance_report")
+            
+        except Exception as e:
+            logger.exception("Performance bulk generation failed")
+            messages.error(request, f"Failed to generate reviews: {str(e)}")
+            return redirect("core:hr_performance_dashboard")
+
+    return render(request, "hr_performance_dashboard.html")
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 12: View Performance Report
+# ──────────────────────────────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_hr_check)
+def view_performance_report_view(request):
+    """Displays the AI-generated structured performance reports from the bulk upload."""
+    record_ids = request.session.get('latest_performance_records', [])
+    records = PerformanceRecord.objects.filter(id__in=record_ids)
+    
+    if not records.exists():
+        messages.warning(request, "No recent reports to display.")
+        return redirect("core:hr_performance_dashboard")
+        
+    return render(request, "performance_report.html", {"records": records})
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 13: Download Performance PDF
+# ──────────────────────────────────────────────────────────────────────────────
+import io
+from django.http import HttpResponse
+
+@login_required
+@user_passes_test(is_hr_check)
+def performance_download_pdf_view(request):
+    """Generates a PDF of all recently processed performance reports."""
+    record_ids = request.session.get('latest_performance_records', [])
+    records = PerformanceRecord.objects.filter(id__in=record_ids)
+    
+    if not records.exists():
+        messages.error(request, "No reports available for download.")
+        return redirect("core:hr_performance_dashboard")
+        
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    title_style = styles['Heading1']
+    sub_style = styles['Heading2']
+    normal_style = styles['Normal']
+    
+    elements.append(Paragraph("Performance Review Reports (Bulk Generated)", title_style))
+    elements.append(Spacer(1, 20))
+    
+    for record in records:
+        elements.append(Paragraph(f"Employee: {record.employee.user.username} ({record.employee.user.email})", sub_style))
+        elements.append(Paragraph(f"Review Period: {record.review_period}", normal_style))
+        elements.append(Paragraph(f"AI Performance Score: {record.performance_score}/100", normal_style))
+        elements.append(Paragraph(f"KPI Achievement: {record.kpi_achievement_percent}%", normal_style))
+        
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Strengths:", styles['Heading4']))
+        elements.append(Paragraph(record.strengths.replace('\n', '<br/>'), normal_style))
+        
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Areas for Improvement:", styles['Heading4']))
+        elements.append(Paragraph(record.areas_for_improvement.replace('\n', '<br/>'), normal_style))
+        
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("Recommended Actions:", styles['Heading4']))
+        elements.append(Paragraph(record.recommended_actions.replace('\n', '<br/>'), normal_style))
+        
+        elements.append(Spacer(1, 30))
+        
+    doc.build(elements)
+    buffer.seek(0)
+    
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="performance_reports.pdf"'
+    return response

@@ -129,3 +129,25 @@ class FAQ(models.Model):
 
     def __str__(self):
         return self.question
+
+
+class PerformanceRecord(models.Model):
+    """Stores performance review data and AI-generated evaluations for employees."""
+    employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name="performance_records")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Inputs
+    review_period = models.CharField(max_length=100, help_text="e.g., Q1 2026")
+    kpi_data = models.TextField(help_text="Raw KPI data or metrics")
+    task_completion_rate = models.FloatField(help_text="Percentage of tasks completed (0-100)")
+    manager_feedback = models.TextField(help_text="Qualitative feedback from the manager")
+    
+    # AI Generated Outputs
+    performance_score = models.IntegerField(null=True, blank=True, help_text="AI calculated score (0-100)")
+    kpi_achievement_percent = models.FloatField(null=True, blank=True)
+    strengths = models.TextField(null=True, blank=True)
+    areas_for_improvement = models.TextField(null=True, blank=True)
+    recommended_actions = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.review_period}"

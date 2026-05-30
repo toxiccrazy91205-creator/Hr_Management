@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}HR Performance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Performance Review Agent</h1>
+        <p>Upload a global Excel file containing performance data for multiple employees to generate AI reviews in bulk.</p>
+        <div class="accent-line"></div>
+    </div>
+
+    <div class="grid-2" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 100%; max-width: 600px;">
+            <div class="card-header">
+                <div class="card-icon warning">📈</div>
+                <div>
+                    <div class="card-title">Upload Performance Data</div>
+                    <div class="card-subtitle">Supported formats: .xlsx, .xls</div>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="{% url 'core:hr_performance_dashboard' %}">
+                {% csrf_token %}
+                <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <label class="form-label" style="display: block; margin-bottom: var(--space-2);">Review Period (e.g. Q1 2026) <span class="required">*</span></label>
+                    <input type="text" name="review_period" class="form-input" style="width: 100%; box-sizing: border-box;" required placeholder="Q1 2026">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Performance Data Excel <span class="required">*</span>
+                    </label>
+                    <div class="upload-zone" id="upload-zone-performance">
+                        <input type="file" name="performance_excel" id="performance-input" accept=".xlsx,.xls" required>
+                        <span class="upload-icon">📄</span>
+                        <div class="upload-text">
+                            <strong>Click to upload</strong> or drag and drop
+                        </div>
+                        <div class="upload-hint" id="file-label-performance">Upload Excel file containing employee emails and KPI data</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-warning btn-lg btn-block" id="submit-btn-performance">
+                    <span class="spinner" style="display: none;"></span>
+                    <span class="btn-text">🤖 Generate Bulk Reviews</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function() {
+        const btn = document.getElementById('submit-btn-performance');
+        btn.querySelector('.spinner').style.display = 'inline-block';
+        btn.querySelector('.btn-text').textContent = ' Analyzing Data with AI...';
+        btn.classList.add('loading');
+        btn.disabled = true;
+    });
+</script>
+{% endblock %}

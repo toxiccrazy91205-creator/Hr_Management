@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ
+from .models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ, PerformanceRecord
 
 
 class CandidateInline(admin.TabularInline):
@@ -40,3 +40,9 @@ class CompanyPolicyAdmin(admin.ModelAdmin):
 @admin.register(FAQ)
 class FAQAdmin(admin.ModelAdmin):
     list_display = ("question",)
+
+@admin.register(PerformanceRecord)
+class PerformanceRecordAdmin(admin.ModelAdmin):
+    list_display = ("employee", "review_period", "performance_score", "created_at")
+    list_filter = ("review_period",)
+    search_fields = ("employee__user__username", "review_period")
