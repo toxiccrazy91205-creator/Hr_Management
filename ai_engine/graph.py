@@ -7,7 +7,7 @@ Workflow nodes:
   3. schedule_interviews — Scheduler Agent assigns time slots
   4. draft_emails — Communicator Agent drafts personalised emails
   5. send_emails — dispatches emails via Django send_mail
-                   (paused via interrupt_before for human-in-the-loop)
+                   (runs automatically, no human-in-the-loop pause)
 """
 
 import json
@@ -238,15 +238,15 @@ def draft_emails(state: HRState) -> dict:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Node 5: Send Emails (HUMAN-IN-THE-LOOP — paused before this node)
+# Node 5: Send Emails
 # ──────────────────────────────────────────────────────────────────────────────
 
 def send_emails(state: HRState) -> dict:
     """
     Send the drafted emails via Django's send_mail.
-    This node is gated by `interrupt_before` so the HR user must approve first.
+    This node runs automatically without requiring human approval.
     """
-    logger.info("▶ Node: send_emails (approved by human)")
+    logger.info("▶ Node: send_emails (automatic)")
     from django.core.mail import send_mail as django_send_mail
     from django.conf import settings as django_settings
 
@@ -295,7 +295,7 @@ def build_graph() -> StateGraph:
     """
     Construct and compile the HR recruitment LangGraph.
 
-    Flow:  ingest → screen → schedule → draft_emails →(pause)→ send_emails → END
+    Flow:  ingest → screen → schedule → draft_emails → send_emails → END
     """
     graph = StateGraph(HRState)
 
@@ -314,10 +314,9 @@ def build_graph() -> StateGraph:
     graph.add_edge("draft_emails", "send_emails")
     graph.add_edge("send_emails", END)
 
-    # Compile with interrupt_before so the graph PAUSES before send_emails
+    # Compile without interrupt_before so the graph runs end-to-end
     compiled = graph.compile(
         checkpointer=memory,
-        interrupt_before=["send_emails"],
     )
     return compiled
 

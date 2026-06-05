@@ -174,19 +174,20 @@ def dashboard_view(request):
                     interview_slot=slot,
                     drafted_email=drafted_email_text,
                     resume_source=source,
-                    status="email_drafted",
+                    status="email_sent",
+                    email_sent=True,
                 )
 
             # Save thread ID and update status
             job.langgraph_thread_id = thread_id
-            job.status = "pending_approval"
+            job.status = "approved"
             job.save()
 
             messages.success(
                 request,
-                f"AI screening complete! {len(shortlisted)} candidate(s) shortlisted."
+                f"AI screening complete! {len(shortlisted)} candidate(s) shortlisted and emails have been sent."
             )
-            return redirect("core:approval", job_id=job.id)
+            return redirect("core:success", job_id=job.id)
 
         except Exception as exc:
             logger.exception("AI pipeline failed")
@@ -215,73 +216,6 @@ def dashboard_view(request):
         "recent_jobs": recent_jobs,
         "resume_job": resume_job,
     })
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# View 2: Approval — human-in-the-loop review
-# ──────────────────────────────────────────────────────────────────────────────
-
-@login_required
-@user_passes_test(is_hr_check)
-def approval_list_view(request):
-    """Redirect to the most recent pending approval, or back to dashboard if none."""
-    pending = JobPosting.objects.filter(status="pending_approval").order_by("-created_at").first()
-    if pending:
-        return redirect("core:approval", job_id=pending.id)
-    messages.info(request, "There are no pipelines currently pending approval.")
-    return redirect("core:dashboard")
-
-@login_required
-@user_passes_test(is_hr_check)
-def approval_view(request, job_id):
-    """Display shortlisted candidates and drafted emails for HR approval."""
-    job = get_object_or_404(JobPosting, pk=job_id)
-    candidates = job.candidates.all()
-    return render(request, "approval.html", {
-        "job": job,
-        "candidates": candidates,
-    })
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# View 3: Approve and Send — resume the LangGraph
-# ──────────────────────────────────────────────────────────────────────────────
-
-@login_required
-@user_passes_test(is_hr_check)
-def approve_and_send_view(request, job_id):
-    """
-    POST → Resume the LangGraph to execute the send_emails node,
-           update candidate records, redirect to success.
-    """
-    if request.method != "POST":
-        return HttpResponseBadRequest("Only POST allowed.")
-
-    job = get_object_or_404(JobPosting, pk=job_id)
-    thread_id = job.langgraph_thread_id or str(job.id)
-    config = {"configurable": {"thread_id": thread_id}}
-
-    try:
-        from ai_engine.graph import hr_graph
-
-        # Resume the graph from the interrupt point — pass None as input
-        # to continue with the existing state
-        result = hr_graph.invoke(None, config=config)
-
-        # Mark candidates as sent
-        job.candidates.filter(status="email_drafted").update(
-            status="email_sent", email_sent=True
-        )
-        job.status = "approved"
-        job.save()
-
-        messages.success(request, "All emails have been sent successfully!")
-        return redirect("core:success", job_id=job.id)
-
-    except Exception as exc:
-        logger.exception("Email sending failed")
-        messages.error(request, f"Email dispatch error: {exc}")
-        return redirect("core:approval", job_id=job.id)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
