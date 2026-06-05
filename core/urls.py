@@ -6,6 +6,11 @@ app_name = "core"
 urlpatterns = [
     path("", views.dashboard_view, name="dashboard"),
     path(
+        "approval/",
+        views.approval_list_view,
+        name="approval_list",
+    ),
+    path(
         "approval/<uuid:job_id>/",
         views.approval_view,
         name="approval",

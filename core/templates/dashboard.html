@@ -3,324 +3,230 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="p-8 max-w-[1200px] mx-auto space-y-6">
     <!-- Page Header -->
-    <div class="page-header">
-        <h1>AI Recruitment Dashboard</h1>
-        <p>Upload resumes and define your ideal candidate. Our AI agents will screen, schedule, and draft communications automatically.</p>
-        <div class="accent-line"></div>
+    <div class="mb-8">
+        <h2 class="text-[28px] font-semibold text-slate-800">Create Job Posting</h2>
+        <p class="text-slate-500 mt-1">Post new positions and start recruiting top talent</p>
     </div>
 
-    <div class="grid-2">
-        <!-- Main Form Card -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon indigo">{% if resume_job %}<i data-lucide="refresh-cw"></i>{% else %}<i data-lucide="clipboard-list"></i>{% endif %}</div>
-                <div>
-                    <div class="card-title">{% if resume_job %}Resume Pipeline — {{ resume_job.title }}{% else %}New Recruitment Pipeline{% endif %}</div>
-                    <div class="card-subtitle">{% if resume_job %}Pick up where you left off — just re-upload resumes and go{% else %}Fill in the job details and upload candidate resumes{% endif %}</div>
-                </div>
-            </div>
+    {% if resume_job %}
+    <div class="p-4 bg-accent/10 border border-accent/20 text-accent rounded-xl flex items-center gap-3 mb-6">
+        <i data-lucide="info" class="w-5 h-5"></i>
+        <span>Resuming draft pipeline. Your previous job details are pre-filled below.</span>
+    </div>
+    {% endif %}
 
-            {% if resume_job %}
-            <div class="alert alert-info" style="margin-bottom: var(--space-6);">
-                <i data-lucide="info" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Resuming draft pipeline. Your previous job details are pre-filled below. Upload resumes and submit to retry.
-            </div>
-            {% endif %}
+    <form method="post" enctype="multipart/form-data" id="recruitment-form">
+        {% csrf_token %}
+        {% if resume_job %}
+        <input type="hidden" name="resume_job_id" value="{{ resume_job.id }}">
+        {% endif %}
+        
+        <!-- Hidden fields for backend compatibility -->
+        <input type="hidden" name="required_skills" value="{{ resume_job.required_skills|default:'Not specified' }}">
+        <input type="hidden" name="experience_years" value="{{ resume_job.experience_years|default:0 }}">
 
-            <form method="post" enctype="multipart/form-data" id="recruitment-form">
-                {% csrf_token %}
-                {% if resume_job %}
-                <input type="hidden" name="resume_job_id" value="{{ resume_job.id }}">
-                {% endif %}
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 items-stretch">
+            
+            <!-- Left Card: Job Details -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm flex flex-col h-full">
+                <h3 class="mb-6 flex items-center gap-2 font-semibold text-lg text-slate-800">
+                    Job Details
+                    <i data-lucide="sparkles" class="w-4 h-4 text-accent"></i>
+                </h3>
 
-                <div class="form-group">
-                    <label class="form-label" for="job_title">
-                        Job Title / Role <span class="required">*</span>
-                    </label>
-                    <input type="text" class="form-input" id="job_title" name="job_title"
-                           placeholder="e.g. Senior Backend Engineer"
-                           value="{{ resume_job.title|default:'' }}"
-                           required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="job_description">
-                        Job Description <span class="required">*</span>
-                    </label>
-                    <textarea class="form-textarea" id="job_description" name="job_description"
-                              placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..."
-                              required>{{ resume_job.description|default:'' }}</textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label" for="required_skills">
-                            Required Skills <span class="required">*</span>
-                        </label>
-                        <input type="text" class="form-input" id="required_skills" name="required_skills"
-                               placeholder="e.g. Python, Django, REST APIs, PostgreSQL"
-                               value="{{ resume_job.required_skills|default:'' }}"
-                               required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="experience_years">
-                            Min. Experience (years)
-                        </label>
-                        <input type="number" class="form-input" id="experience_years" name="experience_years"
-                               placeholder="e.g. 3" min="0" max="50" value="{% if resume_job %}{{ resume_job.experience_years }}{% else %}0{% endif %}">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        Upload Resumes <span class="required">*</span>
-                    </label>
-                    <div class="upload-zone" id="upload-zone">
-                        <input type="file" name="resumes" id="resume-input" multiple
-                               accept=".pdf,.docx,.doc,.txt" required>
-                        <span class="upload-icon"><i data-lucide="file-text" style="width:32px;height:32px;"></i></span>
-                        <div class="upload-text">
-                            <strong>Click to upload</strong> or drag and drop
-                        </div>
-                        <div class="upload-hint" id="file-label">PDF, DOCX, DOC, or TXT — up to 50 files</div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">
-                    <span class="spinner"></span>
-                    <span class="btn-text" style="display:flex;align-items:center;">{% if resume_job %}<i data-lucide="refresh-cw" style="width:18px;height:18px;margin-right:8px;"></i> Retry AI Screening Pipeline{% else %}<i data-lucide="rocket" style="width:18px;height:18px;margin-right:8px;"></i> Launch AI Screening Pipeline{% endif %}</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- Sidebar: Recent Jobs & How It Works -->
-        <div>
-            <!-- How It Works -->
-            <div class="card" style="margin-bottom: var(--space-6);">
-                <div class="card-header">
-                    <div class="card-icon cyan"><i data-lucide="zap"></i></div>
+                <div class="space-y-5 flex-1">
                     <div>
-                        <div class="card-title">How It Works</div>
+                        <label class="block mb-2 text-[13px] font-medium text-slate-500" for="job_title">Job Title</label>
+                        <input
+                            type="text"
+                            id="job_title" name="job_title"
+                            placeholder="e.g. Senior Software Engineer"
+                            value="{{ resume_job.title|default:'' }}"
+                            required
+                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm placeholder:text-slate-400"
+                        />
                     </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
-                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
-                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">1</div>
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-sm);">Ingest & Vectorize</div>
-                            <div style="font-size: var(--font-xs); color: var(--text-muted);">Resumes are parsed, chunked, and stored in ChromaDB</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
-                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">2</div>
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-sm);">AI Screening</div>
-                            <div style="font-size: var(--font-xs); color: var(--text-muted);">RAG retrieval + LLM evaluates skill-match scores</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
-                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">3</div>
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-sm);">Schedule & Draft</div>
-                            <div style="font-size: var(--font-xs); color: var(--text-muted);">AI assigns time slots and drafts personalized emails</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
-                        <div style="min-width: 28px; height: 28px; border-radius: 50%; background: var(--accent-success); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white;">4</div>
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-sm);">You Approve</div>
-                            <div style="font-size: var(--font-xs); color: var(--text-muted);">Review shortlist & emails before anything is sent</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Uploaded Resumes Panel (dynamic, JS-powered) -->
-            <div class="card" id="resume-panel" style="margin-bottom: var(--space-6); display: none;">
-                <div class="card-header">
-                    <div class="card-icon emerald"><i data-lucide="files"></i></div>
-                    <div style="flex: 1;">
-                        <div class="card-title" style="display: flex; align-items: center; gap: var(--space-3);">
-                            Uploaded Resumes
-                            <span id="resume-count-badge" style="
-                                background: var(--accent-gradient);
-                                color: white;
-                                font-size: var(--font-xs);
-                                font-weight: 700;
-                                padding: 2px 10px;
-                                border-radius: var(--radius-full);
-                                min-width: 24px;
-                                text-align: center;
-                            ">0</span>
-                        </div>
-                        <div class="card-subtitle">Files ready for AI processing</div>
+                    <div>
+                        <label class="block mb-2 text-[13px] font-medium text-slate-500" for="department">Department</label>
+                        <select
+                            id="department" name="department"
+                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm appearance-none"
+                            style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;"
+                        >
+                            <option value="Engineering">Engineering</option>
+                            <option value="Product">Product</option>
+                            <option value="Design">Design</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Sales">Sales</option>
+                            <option value="HR">HR</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 text-[13px] font-medium text-slate-500" for="job_description">Job Description</label>
+                        <textarea
+                            id="job_description" name="job_description"
+                            rows="6"
+                            placeholder="Describe the role, responsibilities, and requirements..."
+                            required
+                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none text-sm placeholder:text-slate-400"
+                        >{{ resume_job.description|default:'' }}</textarea>
                     </div>
                 </div>
-                <ul id="resume-file-list" class="job-list" style="max-height: 320px; overflow-y: auto;"></ul>
-                <div id="resume-clear-bar" style="
-                    padding: var(--space-3) var(--space-5);
-                    border-top: 1px solid var(--border-subtle);
-                    text-align: right;
-                ">
-                    <button type="button" id="clear-all-btn" class="btn btn-outline" style="font-size: var(--font-xs); padding: var(--space-2) var(--space-4);">
-                        <i data-lucide="trash-2" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Clear All
+
+                <div class="mt-8 pt-4">
+                    <button type="submit" id="submit-btn" class="w-full py-3.5 bg-[#1f48d9] hover:bg-[#1a3cb8] text-white font-medium rounded-xl transition-colors text-[15px] shadow-sm">
+                        Create Job Posting
                     </button>
                 </div>
             </div>
 
-            <!-- Recent Jobs -->
-            {% if recent_jobs %}
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon amber"><i data-lucide="folder"></i></div>
-                    <div>
-                        <div class="card-title">Recent Pipelines</div>
+            <!-- Right Card: Candidate Ingestion -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm flex flex-col h-full">
+                <div class="flex items-center gap-3 mb-6">
+                    <h3 class="font-semibold text-lg text-slate-800">Candidate Ingestion</h3>
+                    <div class="px-3 py-1 text-[11px] bg-[#f0efff] text-[#544af4] font-medium rounded-full">
+                        AI-Powered
                     </div>
                 </div>
-                <ul class="job-list">
-                    {% for job in recent_jobs %}
-                    <li class="job-list-item">
-                        <div class="job-info">
-                            <span class="job-title-text">{{ job.title }}</span>
-                            <span class="job-date">{{ job.created_at|date:"M d, Y H:i" }}</span>
+
+                <div class="flex-1 flex flex-col" id="upload-container">
+                    <div id="drop-zone" class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 bg-[#fbfbfe] rounded-2xl p-8 text-center transition-all duration-300 hover:border-accent/50 hover:bg-accent/5 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-[#544af4] flex items-center justify-center shadow-md shadow-accent/20" id="upload-icon-container">
+                            <i data-lucide="upload" class="w-7 h-7 text-white"></i>
                         </div>
-                        {% if job.status == 'pending_approval' %}
-                            <a href="{% url 'core:approval' job_id=job.id %}" class="btn btn-outline" style="font-size: var(--font-xs);">Review</a>
-                        {% elif job.status == 'approved' %}
-                            <a href="{% url 'core:success' job_id=job.id %}" class="btn btn-outline" style="font-size: var(--font-xs);">View</a>
-                        {% elif job.status == 'draft' or job.status == 'screening' %}
-                            <a href="{% url 'core:dashboard' %}?resume={{ job.id }}" class="btn btn-outline" style="font-size: var(--font-xs); border-color: var(--accent-warning); color: var(--accent-warning);"><i data-lucide="refresh-cw" style="width:12px;height:12px;margin-right:4px;"></i> Resume</a>
-                        {% else %}
-                            <span class="status-badge status-draft">{{ job.get_status_display }}</span>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
+                        <h4 class="mb-2 font-medium text-[17px] text-slate-800">Drop PDF Resumes Here</h4>
+                        <p class="text-[13px] text-slate-400 mb-6" id="upload-hint">
+                            or click to browse files
+                        </p>
+                        <input
+                            type="file"
+                            name="resumes"
+                            id="resume-input"
+                            multiple
+                            accept=".pdf,.docx,.doc,.txt"
+                            required
+                            class="hidden"
+                        />
+                        <button type="button" class="inline-block px-8 py-2.5 bg-[#544af4] text-white text-[15px] font-medium rounded-xl shadow-sm hover:bg-[#4338ca] transition-colors pointer-events-none">
+                            Select Files
+                        </button>
+                    </div>
+
+                    <div id="uploaded-files-list" class="mt-4 space-y-2 max-h-48 overflow-y-auto pr-2" style="display:none;">
+                        <!-- Files will be injected here via JS -->
+                    </div>
+                </div>
             </div>
-            {% endif %}
+            
         </div>
-    </div>
+    </form>
 </div>
 
 <script>
-(function() {
-    var fileInput = document.getElementById('resume-input');
-    var panel = document.getElementById('resume-panel');
-    var fileList = document.getElementById('resume-file-list');
-    var countBadge = document.getElementById('resume-count-badge');
-    var clearBtn = document.getElementById('clear-all-btn');
-    var fileLabel = document.getElementById('file-label');
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('resume-input');
+    const filesList = document.getElementById('uploaded-files-list');
+    const uploadHint = document.getElementById('upload-hint');
+    const form = document.getElementById('recruitment-form');
+    const submitBtn = document.getElementById('submit-btn');
 
-    // We keep a DataTransfer to allow individual removal
-    var dataTransfer = new DataTransfer();
+    // Click to upload
+    dropZone.addEventListener('click', (e) => {
+        if(e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+    
+    // The button inside also triggers it (though pointer-events-none makes it pass through to dropzone)
+    dropZone.querySelector('button').addEventListener('click', (e) => {
+        fileInput.click();
+        e.stopPropagation();
+    });
 
-    function getFileIcon(name) {
-        var ext = name.split('.').pop().toLowerCase();
-        var icon = 'file-text';
-        if (ext === 'pdf') icon = 'file-type-pdf';
-        else if (ext === 'docx' || ext === 'doc') icon = 'file-type-2';
-        return '<i data-lucide="' + icon + '" style="width:16px;height:16px;"></i>';
+    // Drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 
-    function renderList() {
-        var files = dataTransfer.files;
-        fileList.innerHTML = '';
-        countBadge.textContent = files.length;
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
 
-        if (files.length === 0) {
-            panel.style.display = 'none';
-            fileLabel.textContent = 'PDF, DOCX, DOC, or TXT — up to 50 files';
-            fileLabel.style.color = '';
-            return;
-        }
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
 
-        panel.style.display = '';
-        fileLabel.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
-        fileLabel.style.color = 'var(--accent-success)';
+    function highlight(e) {
+        dropZone.classList.add('border-accent', 'bg-accent/10');
+        dropZone.classList.remove('border-slate-200', 'bg-[#fbfbfe]');
+    }
 
-        for (var i = 0; i < files.length; i++) {
-            (function(idx) {
-                var f = files[idx];
-                var li = document.createElement('li');
-                li.className = 'job-list-item';
-                li.style.animation = 'fadeIn 0.25s ease';
+    function unhighlight(e) {
+        dropZone.classList.remove('border-accent', 'bg-accent/10');
+        dropZone.classList.add('border-slate-200', 'bg-[#fbfbfe]');
+    }
 
-                var info = document.createElement('div');
-                info.className = 'job-info';
-                info.style.flexDirection = 'row';
-                info.style.alignItems = 'center';
-                info.style.gap = 'var(--space-3)';
+    dropZone.addEventListener('drop', handleDrop, false);
 
-                var icon = document.createElement('span');
-                icon.innerHTML = getFileIcon(f.name);
-                icon.style.display = 'flex';
-                icon.style.alignItems = 'center';
-                icon.style.flexShrink = '0';
-                icon.style.fontSize = 'var(--font-lg)';
-                icon.style.flexShrink = '0';
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        updateFileList();
+    }
 
-                var nameWrap = document.createElement('div');
-                var nameEl = document.createElement('span');
-                nameEl.className = 'job-title-text';
-                nameEl.textContent = f.name;
-                nameEl.style.fontSize = 'var(--font-sm)';
-                nameEl.style.wordBreak = 'break-all';
+    fileInput.addEventListener('change', updateFileList);
 
-                var sizeEl = document.createElement('span');
-                sizeEl.className = 'job-date';
-                var kb = (f.size / 1024).toFixed(1);
-                sizeEl.textContent = kb > 1024 ? (f.size / 1048576).toFixed(1) + ' MB' : kb + ' KB';
-
-                nameWrap.appendChild(nameEl);
-                nameWrap.appendChild(document.createElement('br'));
-                nameWrap.appendChild(sizeEl);
-                info.appendChild(icon);
-                info.appendChild(nameWrap);
-
-                var removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.innerHTML = '✕';
-                removeBtn.title = 'Remove this file';
-                removeBtn.style.cssText = 'background:none;border:1px solid var(--border-subtle);color:var(--text-muted);width:28px;height:28px;border-radius:var(--radius-full);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all var(--transition-fast);flex-shrink:0;';
-                removeBtn.onmouseenter = function() { this.style.borderColor='var(--accent-danger)'; this.style.color='var(--accent-danger)'; };
-                removeBtn.onmouseleave = function() { this.style.borderColor='var(--border-subtle)'; this.style.color='var(--text-muted)'; };
-                removeBtn.addEventListener('click', function() {
-                    var newDt = new DataTransfer();
-                    for (var j = 0; j < dataTransfer.files.length; j++) {
-                        if (j !== idx) newDt.items.add(dataTransfer.files[j]);
-                    }
-                    dataTransfer = newDt;
-                    fileInput.files = dataTransfer.files;
-                    renderList();
-                });
-
-                li.appendChild(info);
-                li.appendChild(removeBtn);
-                fileList.appendChild(li);
-            })(i);
-        }
-        // Initialize lucide icons for new elements
-        if (window.lucide) {
-            window.lucide.createIcons();
+    function updateFileList() {
+        filesList.innerHTML = '';
+        if(fileInput.files.length > 0) {
+            filesList.style.display = 'block';
+            uploadHint.textContent = `${fileInput.files.length} file(s) selected`;
+            
+            Array.from(fileInput.files).forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100';
+                fileItem.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center border border-slate-200 shrink-0">
+                        <i data-lucide="file-text" class="w-4 h-4 text-[#544af4]"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-700 truncate">${file.name}</p>
+                        <p class="text-xs text-slate-400">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                `;
+                filesList.appendChild(fileItem);
+            });
+            lucide.createIcons();
+        } else {
+            filesList.style.display = 'none';
+            uploadHint.textContent = 'or click to browse files';
         }
     }
 
-    fileInput.addEventListener('change', function() {
-        // Append new files to existing selection
-        for (var i = 0; i < this.files.length; i++) {
-            dataTransfer.items.add(this.files[i]);
+    form.addEventListener('submit', () => {
+        if(form.checkValidity()) {
+            submitBtn.innerHTML = `
+                <div class="flex items-center justify-center gap-2">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                    <span>Creating & Ingesting...</span>
+                </div>
+            `;
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            lucide.createIcons();
         }
-        this.files = dataTransfer.files;
-        renderList();
     });
-
-    clearBtn.addEventListener('click', function() {
-        dataTransfer = new DataTransfer();
-        fileInput.files = dataTransfer.files;
-        renderList();
-    });
-})();
+});
 </script>
 {% endblock %}

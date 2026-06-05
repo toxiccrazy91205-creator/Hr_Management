@@ -3,1035 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="HR Agentic AI Recruitment System — Automate resume screening, interview scheduling, and candidate communication with AI-powered agents.">
-    <title>{% block title %}HR Agentic AI{% endblock %} — Recruitment System</title>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
+    <title>{% block title %}TalentAI{% endblock %} — HR Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: "var(--background)",
+              foreground: "var(--foreground)",
+              card: "var(--card)",
+              "card-foreground": "var(--card-foreground)",
+              popover: "var(--popover)",
+              "popover-foreground": "var(--popover-foreground)",
+              primary: "var(--primary)",
+              "primary-foreground": "var(--primary-foreground)",
+              secondary: "var(--secondary)",
+              "secondary-foreground": "var(--secondary-foreground)",
+              muted: "var(--muted)",
+              "muted-foreground": "var(--muted-foreground)",
+              accent: "var(--accent)",
+              "accent-foreground": "var(--accent-foreground)",
+              destructive: "var(--destructive)",
+              "destructive-foreground": "var(--destructive-foreground)",
+              border: "var(--border)",
+              input: "var(--input)",
+              ring: "var(--ring)",
+              sidebar: {
+                DEFAULT: "var(--sidebar)",
+                foreground: "var(--sidebar-foreground)",
+                primary: "var(--sidebar-primary)",
+                "primary-foreground": "var(--sidebar-primary-foreground)",
+                accent: "var(--sidebar-accent)",
+                "accent-foreground": "var(--sidebar-accent-foreground)",
+                border: "var(--sidebar-border)",
+              },
+            },
+            borderRadius: {
+              lg: "var(--radius)",
+              md: "calc(var(--radius) - 2px)",
+              sm: "calc(var(--radius) - 4px)",
+            },
+          }
+        }
+      }
+    </script>
     <style>
-        /* ════════════════════════════════════════════════════════════════════
-           DESIGN SYSTEM — HR Agentic AI
-           ════════════════════════════════════════════════════════════════════ */
-
-        :root {
-            /* Linear Marketing Canvas Tokens */
-            --bg-primary: #010102; /* Canvas */
-            --bg-secondary: #0f1115; /* Surface 1 */
-            --bg-card: #0f1115; /* Surface 1 */
-            --bg-card-hover: #191b22; /* Surface 2 */
-            --bg-glass: #0f1115; 
-            --bg-glass-hover: #191b22;
-
-            --accent-primary: #5e6ad2;       /* Linear Lavender-Blue */
-            --accent-primary-hover: #828fff;
-            --accent-primary-focus: #5e69d1;
-            --accent-primary-glow: rgba(94, 106, 210, 0.2);
-            --accent-secondary: #5e6ad2;     
-            --accent-success: #27a644;       /* Semantic Success */
-            --accent-success-glow: rgba(39, 166, 68, 0.2);
-            --accent-warning: #f59e0b;
-            --accent-danger: #ef4444;
-            --accent-info: #06b6d4;
-            
-            /* Linear resists gradient/multi-color on marketing */
-            --accent-gradient: #5e6ad2;
-            --accent-gradient-warm: #5e6ad2;
-            --accent-gradient-cool: #5e6ad2;
-
-            --text-primary: #f7f8f8; /* Ink */
-            --text-secondary: #d0d6e0; /* Ink Muted */
-            --text-muted: #8a8f98; /* Ink Subtle */
-            --text-tertiary: #62666d; /* Ink Tertiary */
-            --text-accent: #828fff;
-
-            --border-subtle: #23252a; /* Hairline */
-            --border-accent: #3a3f47; /* Hairline Strong */
-
-            /* Typography */
-            --font-family: 'Inter', SF Pro Display, -apple-system, system-ui, sans-serif;
-            --font-xs: 0.75rem;
-            --font-sm: 0.875rem;
-            --font-base: 1rem;
-            --font-lg: 1.125rem;
-            --font-xl: 1.25rem;
-            --font-2xl: 1.5rem;
-            --font-3xl: 1.875rem;
-            --font-4xl: 2.5rem; /* display-md */
-            --font-5xl: 3.5rem; /* display-lg */
-
-            /* Spacing */
-            --space-1: 0.25rem;
-            --space-2: 0.5rem;
-            --space-3: 0.75rem;
-            --space-4: 1rem;
-            --space-5: 1.25rem;
-            --space-6: 1.5rem;
-            --space-8: 2rem;
-            --space-10: 2.5rem;
-            --space-12: 3rem;
-            --space-16: 4rem;
-
-            /* Radius */
-            --radius-sm: 6px;
-            --radius-md: 8px; /* Form inputs, buttons */
-            --radius-lg: 12px; /* Cards */
-            --radius-xl: 16px; /* Product panels */
-            --radius-2xl: 24px;
-            --radius-full: 9999px;
-
-            /* Shadows - Linear depth is carried by surface ladder, no drop shadows on dark */
-            --shadow-sm: none;
-            --shadow-md: none;
-            --shadow-lg: none;
-            --shadow-xl: none;
-            --shadow-glow: none;
-            --shadow-glow-success: none;
-
-            /* Transitions */
-            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ── Reset & Base ──────────────────────────────────────────────── */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html {
-            scroll-behavior: smooth;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.5;
-            letter-spacing: -0.05px; /* Default body tracking */
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* ── No Animated background for Linear (pure canvas) ── */
-
-        /* ── Layout ────────────────────────────────────────────────────── */
-        .app-wrapper {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--space-6);
-        }
-
-        /* ── Navigation ────────────────────────────────────────────────── */
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(10, 14, 26, 0.75);
-            border-bottom: 1px solid var(--border-subtle);
-            padding: var(--space-4) 0;
-        }
-
-        .navbar .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            text-decoration: none;
-            color: var(--text-primary);
-        }
-
-        .nav-brand-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-md);
-            background: var(--accent-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-lg);
-            color: white;
-            border: 1px solid var(--accent-primary-hover);
-        }
-
-        .nav-brand-text {
-            font-weight: 600;
-            font-size: var(--font-base);
-            letter-spacing: -0.4px;
-        }
-
-        .nav-brand-text span {
-            color: var(--text-primary);
-        }
-
-        .nav-badge {
-            padding: var(--space-1) var(--space-3);
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-full);
-            font-size: var(--font-xs);
-            color: var(--text-secondary);
-            font-weight: 500;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        /* ── Main Content ──────────────────────────────────────────────── */
-        .main-content {
-            flex: 1;
-            padding: var(--space-10) 0 var(--space-16);
-        }
-
-        /* ── Page Header ───────────────────────────────────────────────── */
-        .page-header {
-            text-align: center;
-            margin-bottom: var(--space-12);
-        }
-
-        .page-header h1 {
-            font-size: var(--font-4xl);
-            font-weight: 600;
-            letter-spacing: -1.8px; /* Aggressive negative tracking */
-            line-height: 1.1;
-            margin-bottom: var(--space-4);
-            color: var(--text-primary);
-        }
-
-        .page-header p {
-            font-size: var(--font-lg);
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .page-header .accent-line {
-            width: 60px;
-            height: 3px;
-            background: var(--accent-gradient);
-            border-radius: var(--radius-full);
-            margin: var(--space-6) auto 0;
-        }
-
-        /* ── Cards ─────────────────────────────────────────────────────── */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6);
-            transition: all var(--transition-base);
-            /* Subtle white edge highlight */
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
-        }
-
-        .card:hover {
-            border-color: var(--border-accent);
-            background: var(--bg-card-hover);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-            margin-bottom: var(--space-6);
-        }
-
-        .card-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-2xl);
-            flex-shrink: 0;
-        }
-
-        .card-icon.indigo { background: rgba(99,102,241,0.15); }
-        .card-icon.emerald { background: rgba(16,185,129,0.15); }
-        .card-icon.amber { background: rgba(245,158,11,0.15); }
-        .card-icon.cyan { background: rgba(6,182,212,0.15); }
-
-        .card-title {
-            font-size: 22px; /* card-title */
-            font-weight: 500;
-            letter-spacing: -0.4px;
-        }
-
-        .card-subtitle {
-            font-size: var(--font-sm);
-            color: var(--text-secondary);
-            margin-top: var(--space-1);
-        }
-
-        /* ── Forms ─────────────────────────────────────────────────────── */
-        .form-group {
-            margin-bottom: var(--space-6);
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            font-size: var(--font-sm);
-            color: var(--text-secondary);
-            margin-bottom: var(--space-2);
-            letter-spacing: 0.01em;
-        }
-
-        .form-label .required {
-            color: var(--accent-danger);
-            margin-left: var(--space-1);
-        }
-
-        .form-input,
-        .form-textarea,
-        .form-select {
-            width: 100%;
-            padding: 8px 12px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-family: var(--font-family);
-            font-size: var(--font-base);
-            transition: all var(--transition-fast);
-            outline: none;
-        }
-
-        .form-input:focus,
-        .form-textarea:focus,
-        .form-select:focus {
-            border-color: var(--border-accent);
-            box-shadow: 0 0 0 2px rgba(94, 105, 209, 0.5); /* Primary focus ring */
-            background: var(--bg-card-hover);
-        }
-
-        .form-input::placeholder,
-        .form-textarea::placeholder {
-            color: var(--text-muted);
-        }
-
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-6);
-        }
-
-        @media (max-width: 640px) {
-            .form-row { grid-template-columns: 1fr; }
-        }
-
-        /* File upload zone */
-        .upload-zone {
-            border: 2px dashed var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-10) var(--space-6);
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-base);
-            background: var(--bg-glass);
-            position: relative;
-        }
-
-        .upload-zone:hover,
-        .upload-zone.drag-over {
-            border-color: var(--accent-primary);
-            background: rgba(99,102,241,0.05);
-        }
-
-        .upload-zone input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .upload-icon {
-            font-size: var(--font-4xl);
-            margin-bottom: var(--space-4);
-            display: block;
-        }
-
-        .upload-text {
-            font-size: var(--font-base);
-            color: var(--text-secondary);
-        }
-
-        .upload-text strong {
-            color: var(--accent-primary);
-        }
-
-        .upload-hint {
-            font-size: var(--font-xs);
-            color: var(--text-muted);
-            margin-top: var(--space-2);
-        }
-
-        /* ── Buttons ───────────────────────────────────────────────────── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-2);
-            padding: 8px 14px; /* Linear compact button spec */
-            font-family: var(--font-family);
-            font-size: 14px; /* typography.button */
-            font-weight: 500;
-            border-radius: var(--radius-md);
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            text-decoration: none;
-            white-space: nowrap;
-        }
-
-        .btn:active { transform: scale(0.98); }
-
-        .btn-primary {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-primary-hover);
-        }
-
-        .btn-primary:focus {
-            box-shadow: 0 0 0 2px rgba(94, 105, 209, 0.5);
-        }
-
-        .btn-success {
-            background: var(--accent-success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #2cb34a;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        .btn-outline {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-primary);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--border-accent);
-            background: var(--bg-card-hover);
-        }
-
-        .btn-lg {
-            padding: 10px 18px;
-            font-size: var(--font-base);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        /* ── Tables ────────────────────────────────────────────────────── */
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-subtle);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: rgba(99,102,241,0.08);
-        }
-
-        th {
-            padding: var(--space-4) var(--space-5);
-            text-align: left;
-            font-size: var(--font-xs);
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        td {
-            padding: var(--space-4) var(--space-5);
-            font-size: var(--font-sm);
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-subtle);
-            vertical-align: top;
-        }
-
-        tr:last-child td { border-bottom: none; }
-
-        tr:hover td {
-            background: var(--bg-glass-hover);
-        }
-
-        /* ── Score Badges ──────────────────────────────────────────────── */
-        .score-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-2);
-            padding: var(--space-1) var(--space-3);
-            border-radius: var(--radius-full);
-            font-size: var(--font-xs);
-            font-weight: 700;
-        }
-
-        .score-high {
-            background: rgba(16,185,129,0.15);
-            color: #34d399;
-        }
-
-        .score-medium {
-            background: rgba(245,158,11,0.15);
-            color: #fbbf24;
-        }
-
-        .score-low {
-            background: rgba(239,68,68,0.15);
-            color: #f87171;
-        }
-
-        /* ── Status Badges ─────────────────────────────────────────────── */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-1);
-            padding: var(--space-1) var(--space-3);
-            border-radius: var(--radius-full);
-            font-size: var(--font-xs);
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background: rgba(245,158,11,0.15);
-            color: #fbbf24;
-        }
-
-        .status-approved {
-            background: rgba(16,185,129,0.15);
-            color: #34d399;
-        }
-
-        .status-draft {
-            background: rgba(100,116,139,0.15);
-            color: #94a3b8;
-        }
-
-        /* ── Email Preview ─────────────────────────────────────────────── */
-        .email-preview {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: var(--space-4);
-            font-size: var(--font-sm);
-            color: var(--text-secondary);
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 200px;
-            overflow-y: auto;
-            line-height: 1.7;
-        }
-
-        .email-preview::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .email-preview::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .email-preview::-webkit-scrollbar-thumb {
-            background: var(--border-subtle);
-            border-radius: var(--radius-full);
-        }
-
-        /* ── Alerts / Messages ─────────────────────────────────────────── */
-        .alert {
-            padding: var(--space-4) var(--space-5);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-6);
-            font-size: var(--font-sm);
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .alert-success {
-            background: rgba(16,185,129,0.1);
-            border: 1px solid rgba(16,185,129,0.2);
-            color: #34d399;
-        }
-
-        .alert-error {
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.2);
-            color: #f87171;
-        }
-
-        .alert-info {
-            background: rgba(6,182,212,0.1);
-            border: 1px solid rgba(6,182,212,0.2);
-            color: #22d3ee;
-        }
-
-        .alert-warning {
-            background: rgba(245,158,11,0.1);
-            border: 1px solid rgba(245,158,11,0.2);
-            color: #fbbf24;
-        }
-
-        /* ── Stats Grid ────────────────────────────────────────────────── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-6);
-            margin-bottom: var(--space-10);
-        }
-
-        .stat-card {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6);
-            text-align: center;
-            transition: all var(--transition-base);
-        }
-
-        .stat-card:hover {
-            border-color: var(--border-accent);
-            transform: translateY(-2px);
-        }
-
-        .stat-value {
-            font-size: var(--font-4xl);
-            font-weight: 600;
-            letter-spacing: -1.0px;
-            color: var(--text-primary);
-        }
-
-        .stat-label {
-            font-size: var(--font-sm);
-            color: var(--text-muted);
-            margin-top: var(--space-2);
-        }
-
-        /* ── Success animation ─────────────────────────────────────────── */
-        .success-icon {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto var(--space-8);
-            border-radius: 50%;
-            background: linear-gradient(135deg, #10b981, #059669);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 50px var(--accent-success-glow);
-        }
-
-        @keyframes successPop {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* ── Recent Jobs List ──────────────────────────────────────────── */
-        .job-list {
-            list-style: none;
-        }
-
-        .job-list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-4) var(--space-5);
-            border-bottom: 1px solid var(--border-subtle);
-            transition: background var(--transition-fast);
-        }
-
-        .job-list-item:last-child { border-bottom: none; }
-        .job-list-item:hover { background: var(--bg-glass-hover); }
-
-        .job-list-item .job-info {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        .job-list-item .job-title-text {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .job-list-item .job-date {
-            font-size: var(--font-xs);
-            color: var(--text-muted);
-        }
-
-        /* ── Grid layouts ──────────────────────────────────────────────── */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: var(--space-8);
-            align-items: start;
-        }
-
-        @media (max-width: 900px) {
-            .grid-2 { grid-template-columns: 1fr; }
-        }
-
-        /* ── Footer ────────────────────────────────────────────────────── */
-        .footer {
-            padding: var(--space-8) 0;
-            border-top: 1px solid var(--border-subtle);
-            text-align: center;
-        }
-
-        .footer p {
-            font-size: var(--font-sm);
-            color: var(--text-muted);
-        }
-
-        .footer a {
-            color: var(--accent-primary);
-            text-decoration: none;
-        }
-
-        /* ── Candidate expand toggle ───────────────────────────────────── */
-        .candidate-card {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            margin-bottom: var(--space-4);
-            overflow: hidden;
-            transition: all var(--transition-base);
-        }
-
-        .candidate-card:hover {
-            border-color: var(--border-accent);
-        }
-
-        .candidate-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-5) var(--space-6);
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .candidate-header:hover {
-            background: var(--bg-glass-hover);
-        }
-
-        .candidate-info {
-            display: flex;
-            align-items: center;
-            gap: var(--space-4);
-        }
-
-        .candidate-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-full);
-            background: var(--accent-gradient);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: var(--font-sm);
-            color: white;
-            flex-shrink: 0;
-        }
-
-        .candidate-name {
-            font-weight: 600;
-            font-size: var(--font-base);
-        }
-
-        .candidate-email {
-            font-size: var(--font-xs);
-            color: var(--text-muted);
-        }
-
-        .candidate-details {
-            padding: 0 var(--space-6) var(--space-6);
-            display: none;
-        }
-
-        .candidate-details.open {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .detail-row {
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: var(--space-3);
-            padding: var(--space-2) 0;
-            font-size: var(--font-sm);
-        }
-
-        .detail-label {
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .detail-value {
-            color: var(--text-primary);
-        }
-
-        /* ── Section spacing ───────────────────────────────────────────── */
-        .section {
-            margin-bottom: var(--space-10);
-        }
-
-        .section-title {
-            font-size: var(--font-xl);
-            font-weight: 700;
-            margin-bottom: var(--space-6);
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        /* ── Action bar ────────────────────────────────────────────────── */
-        .action-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--space-4);
-            padding: var(--space-6);
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            margin-top: var(--space-8);
-        }
-
-        .action-bar-text {
-            font-size: var(--font-sm);
-            color: var(--text-secondary);
-        }
-
-        .action-bar-buttons {
-            display: flex;
-            gap: var(--space-3);
-        }
-
-        /* ── Loading spinner ───────────────────────────────────────────── */
-        .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .btn.loading .spinner { display: inline-block; }
-        .btn.loading .btn-text { opacity: 0.7; }
-
-        /* ── Responsive ────────────────────────────────────────────────── */
-        @media (max-width: 640px) {
-            .page-header h1 { font-size: var(--font-3xl); }
-            .card { padding: var(--space-5); }
-            .action-bar {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
+      :root {
+        --background: #f8fafc;
+        --foreground: #0f172a;
+        --card: #ffffff;
+        --card-foreground: #0f172a;
+        --popover: #ffffff;
+        --popover-foreground: #0f172a;
+        --primary: #1f48d9;
+        --primary-foreground: #ffffff;
+        --secondary: #f1f5f9;
+        --secondary-foreground: #1e293b;
+        --muted: #f1f5f9;
+        --muted-foreground: #64748b;
+        --accent: #544af4;
+        --accent-foreground: #ffffff;
+        --destructive: #ef4444;
+        --destructive-foreground: #ffffff;
+        --border: #e2e8f0;
+        --input: #e2e8f0;
+        --input-background: #ffffff;
+        --ring: #544af4;
+        --radius: 0.75rem;
+        
+        /* Dark Sidebar in Light Mode */
+        --sidebar: #1e2333;
+        --sidebar-foreground: #ffffff;
+        --sidebar-primary: #544af4;
+        --sidebar-primary-foreground: #ffffff;
+        --sidebar-accent: #544af4;
+        --sidebar-accent-foreground: #ffffff;
+        --sidebar-border: #1e2333;
+      }
+      body {
+        background-color: var(--background);
+        color: var(--foreground);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      /* Custom Animations */
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .animate-spin-slow {
+        animation: spin 3s linear infinite;
+      }
+      /* Sidebar specific */
+      .nav-item.active {
+        background-color: var(--sidebar-primary);
+        color: var(--sidebar-primary-foreground);
+      }
     </style>
 </head>
-<body>
-    <div class="app-wrapper">
-        <!-- Navigation -->
-        <nav class="navbar" id="main-nav">
-            <div class="container">
-                <a href="{% url 'core:dashboard' %}" class="nav-brand">
-                    <div class="nav-brand-icon"><i data-lucide="bot" style="width:20px;height:20px;"></i></div>
-                    <div class="nav-brand-text">
-                        <span>HR Agent</span> AI
-                    </div>
-                </a>
-                <div style="display: flex; gap: var(--space-4); align-items: center;">
-                    {% if user.is_authenticated %}
-                        {% if user.employeeprofile.is_hr %}
-                            <a href="{% url 'core:dashboard' %}" class="nav-badge" style="text-decoration: none;">Recruitment</a>
-                            <a href="{% url 'core:attendance_upload' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary);">Attendance</a>
-                            <a href="{% url 'core:hr_manage_data' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-success); color: var(--accent-success);">HR Manage</a>
-                            <a href="{% url 'core:hr_performance_dashboard' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-warning); color: var(--accent-warning);">Performance</a>
-                        {% else %}
-                            <a href="{% url 'core:employee_chat' %}" class="nav-badge" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary);">AI Chat</a>
-                        {% endif %}
-                        <a href="{% url 'core:logout' %}" style="text-decoration: none; color: var(--text-secondary); font-size: var(--font-sm);">Logout ({{ user.username }})</a>
+<body class="bg-background text-foreground overflow-hidden">
+    <div class="h-screen w-full flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shrink-0">
+          <div class="p-6">
+            <a href="{% url 'core:dashboard' %}" class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center">
+                <div class="w-6 h-6 bg-white rounded" style="clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"></div>
+              </div>
+              <div>
+                <h1 class="text-lg tracking-tight font-semibold">TalentAI</h1>
+                <p class="text-xs text-sidebar-foreground/60">HR Intelligence</p>
+              </div>
+            </a>
+          </div>
+
+          <nav class="flex-1 px-4 space-y-1" id="sidebar-nav">
+            <a href="{% url 'core:dashboard' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+              <span>Dashboard</span>
+            </a>
+            <a href="/approval" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <i data-lucide="user-check" class="w-5 h-5"></i>
+              <span>AI Approval</span>
+            </a>
+            <a href="{% url 'core:attendance_upload' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+              <span>Attendance</span>
+            </a>
+            <a href="{% url 'core:hr_manage_data' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <i data-lucide="database" class="w-5 h-5"></i>
+              <span>Knowledge Base</span>
+            </a>
+            <a href="{% url 'core:hr_performance_dashboard' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+              <span>Analytics</span>
+            </a>
+            <a href="{% url 'core:employee_chat' %}" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <i data-lucide="message-square" class="w-5 h-5"></i>
+              <span>AI Assistant</span>
+            </a>
+          </nav>
+
+          {% if user.is_authenticated %}
+          <div class="p-4 border-t border-sidebar-border">
+            <div class="flex items-center gap-3 px-4 py-3">
+              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-chart-1 to-chart-2 flex items-center justify-center text-sm font-medium text-white">
+                {{ user.username|first|upper }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm truncate">{{ user.username }}</p>
+                <p class="text-xs text-sidebar-foreground/50 truncate">
+                    {% if user.employeeprofile.is_hr %}HR Manager{% else %}Employee{% endif %}
+                </p>
+              </div>
+              <a href="{% url 'core:logout' %}" class="text-sidebar-foreground/50 hover:text-sidebar-foreground hover:text-destructive" title="Logout">
+                  <i data-lucide="log-out" class="w-4 h-4"></i>
+              </a>
+            </div>
+          </div>
+          {% else %}
+          <div class="p-4 border-t border-sidebar-border">
+            <div class="flex flex-col gap-2">
+                <a href="{% url 'core:login' %}" class="px-4 py-2 text-sm text-center border border-border rounded-lg hover:bg-accent transition-colors">Login</a>
+                <a href="{% url 'core:signup' %}" class="px-4 py-2 text-sm text-center bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">Sign Up</a>
+            </div>
+          </div>
+          {% endif %}
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden bg-background">
+            {% if messages %}
+            <div class="p-4 absolute top-4 right-4 z-50 w-full max-w-sm space-y-2">
+                {% for message in messages %}
+                <div class="p-4 rounded-lg shadow-lg flex items-center gap-3 alert-msg bg-card border border-border text-foreground">
+                    {% if message.tags == 'success' %}
+                        <i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i>
+                    {% elif message.tags == 'error' %}
+                        <i data-lucide="x-circle" class="w-5 h-5 text-red-500"></i>
                     {% else %}
-                        <a href="{% url 'core:login' %}" style="text-decoration: none; color: var(--text-secondary); font-size: var(--font-sm);">Login</a>
-                        <a href="{% url 'core:signup' %}" style="text-decoration: none; color: var(--text-secondary); font-size: var(--font-sm);">Sign Up</a>
+                        <i data-lucide="info" class="w-5 h-5 text-blue-500"></i>
                     {% endif %}
+                    <span class="text-sm font-medium">{{ message }}</span>
                 </div>
+                {% endfor %}
             </div>
-        </nav>
+            {% endif %}
 
-        <!-- Flash Messages -->
-        {% if messages %}
-        <div class="container" style="margin-top: var(--space-6);">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" id="alert-{{ forloop.counter }}">
-                {% if message.tags == 'success' %}<i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>
-                {% elif message.tags == 'error' %}<i data-lucide="x-circle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>
-                {% elif message.tags == 'warning' %}<i data-lucide="alert-triangle" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>
-                {% else %}<i data-lucide="info" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;display:inline-block;"></i>{% endif %}
-                {{ message }}
+            <div class="flex-1 overflow-auto">
+                {% block content %}{% endblock %}
             </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Page Content -->
-        <main class="main-content">
-            {% block content %}{% endblock %}
         </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="container">
-                <p>HR Agentic AI Recruitment System — Powered by LangGraph &amp; ChromaDB</p>
-            </div>
-        </footer>
     </div>
 
-    <script>
-        // Auto-dismiss alerts after 8 seconds
-        document.querySelectorAll('.alert').forEach(function(alert) {
-            setTimeout(function() {
-                alert.style.transition = 'opacity 0.5s, transform 0.5s';
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-10px)';
-                setTimeout(function() { alert.remove(); }, 500);
-            }, 8000);
-        });
-
-        // Candidate card expand/collapse
-        document.querySelectorAll('.candidate-header').forEach(function(header) {
-            header.addEventListener('click', function() {
-                var details = this.nextElementSibling;
-                var chevron = this.querySelector('.chevron');
-                if (details) {
-                    details.classList.toggle('open');
-                    if (chevron) {
-                        var iconName = details.classList.contains('open') ? 'chevron-up' : 'chevron-down';
-                        chevron.innerHTML = '<i data-lucide="' + iconName + '" style="width:16px;height:16px;color:var(--text-muted);"></i>';
-                        if (window.lucide) window.lucide.createIcons();
-                    }
-                }
-            });
-        });
-
-        // Upload zone drag & drop feedback
-        document.querySelectorAll('.upload-zone').forEach(function(uploadZone) {
-            var fileInput = uploadZone.querySelector('input[type="file"]');
-            var fileLabel = uploadZone.querySelector('.upload-hint');
-
-            ['dragenter', 'dragover'].forEach(function(evt) {
-                uploadZone.addEventListener(evt, function(e) {
-                    e.preventDefault();
-                    uploadZone.classList.add('drag-over');
-                });
-            });
-            
-            ['dragleave', 'drop'].forEach(function(evt) {
-                uploadZone.addEventListener(evt, function(e) {
-                    e.preventDefault();
-                    uploadZone.classList.remove('drag-over');
-                    
-                    if (evt === 'drop' && fileInput && e.dataTransfer.files.length > 0) {
-                        fileInput.files = e.dataTransfer.files;
-                        // manually dispatch change event
-                        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            });
-
-            if (fileInput && fileLabel) {
-                // If it's the attendance page, we want this default behavior.
-                // For the recruitment dashboard, its own script might override or supplement this.
-                fileInput.addEventListener('change', function() {
-                    if (this.files.length > 0 && this.id !== 'resume-input') {
-                        var names = Array.from(this.files).map(function(f) { return f.name; });
-                        fileLabel.textContent = names.join(', ');
-                        fileLabel.style.color = 'var(--accent-success)';
-                    }
-                });
-            }
-        });
-
-        // Form submit loading state
-        document.querySelectorAll('form').forEach(function(form) {
-            form.addEventListener('submit', function() {
-                var btn = form.querySelector('.btn-primary, .btn-success');
-                if (btn) {
-                    btn.classList.add('loading');
-                    btn.disabled = true;
-                }
-            });
-        });
-    </script>
-    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
+            
+            // Auto-dismiss alerts
+            setTimeout(() => {
+                document.querySelectorAll('.alert-msg').forEach(el => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(-10px)';
+                    el.style.transition = 'all 0.5s ease-out';
+                    setTimeout(() => el.remove(), 500);
+                });
+            }, 5000);
+
+            // Set active nav item
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('#sidebar-nav .nav-item');
+            navItems.forEach(item => {
+                // simple exact match or prefix match
+                const href = item.getAttribute('href');
+                if (href === currentPath || (href !== '/' && currentPath.startsWith(href))) {
+                    item.classList.remove('text-sidebar-foreground/70', 'hover:bg-sidebar-accent');
+                    item.classList.add('bg-sidebar-primary', 'text-sidebar-primary-foreground', 'shadow-lg', 'shadow-sidebar-primary/20');
+                    const icon = item.querySelector('i');
+                    if(icon) {
+                        icon.style.filter = 'drop-shadow(0 0 8px rgba(99,102,241,0.6))';
+                    }
+                }
+            });
         });
     </script>
 </body>

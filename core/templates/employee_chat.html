@@ -3,90 +3,103 @@
 {% block title %}Employee Support Chat{% endblock %}
 
 {% block content %}
-<style>
-    .chat-container {
-        display: flex;
-        flex-direction: column;
-        height: 70vh;
-        max-height: 800px;
-    }
-    .chat-box {
-        flex: 1;
-        overflow-y: auto;
-        padding: var(--space-4);
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-        background: var(--bg-secondary);
-        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-bottom: none;
-    }
-    .chat-message {
-        max-width: 80%;
-        padding: var(--space-3) var(--space-4);
-        border-radius: var(--radius-md);
-        line-height: 1.5;
-    }
-    .chat-message.user {
-        align-self: flex-end;
-        background: var(--accent-primary);
-        color: white;
-        border-bottom-right-radius: 4px;
-    }
-    .chat-message.agent {
-        align-self: flex-start;
-        background: var(--bg-card);
-        color: var(--text-primary);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-bottom-left-radius: 4px;
-        backdrop-filter: blur(10px);
-    }
-    .chat-input-area {
-        display: flex;
-        padding: var(--space-4);
-        background: var(--bg-secondary);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-        gap: var(--space-3);
-    }
-    .chat-input-area input {
-        flex: 1;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        background: var(--bg-tertiary);
-        color: var(--text-primary);
-        border-radius: var(--radius-md);
-        padding: var(--space-3);
-        outline: none;
-        transition: border-color 0.2s;
-    }
-    .chat-input-area input:focus {
-        border-color: var(--accent-primary);
-    }
-</style>
+<div class="flex-1 flex overflow-hidden bg-background h-[calc(100vh-theme(spacing.16))]">
+    <!-- Chat History Sidebar -->
+    <aside class="w-72 bg-card border-r border-border flex flex-col shrink-0 hidden md:flex">
+        <div class="p-4 border-b border-border">
+            <button class="w-full px-4 py-3 bg-accent text-accent-foreground rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 font-medium">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                New Conversation
+            </button>
+        </div>
 
-<div class="container" style="max-width: 800px;">
-    <div class="page-header" style="margin-bottom: var(--space-6);">
-        <h1>HR Support Agent</h1>
-        <p>Ask questions about your personal data, leave balances, or company policies.</p>
-        <div class="accent-line"></div>
-    </div>
-
-    <div class="chat-container shadow-sm">
-        <div class="chat-box" id="chatBox">
-            <div class="chat-message agent">
-                Hello <strong>{{ request.user.username }}</strong>! I am your AI HR Assistant. I can help you with company policies, FAQs, and your personal data (like salary and leave balance). How can I help you today?
+        <div class="flex-1 overflow-auto p-4">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 px-2">Recent Chats</h4>
+            <div class="space-y-1">
+                <!-- Static history for UI demonstration as per design -->
+                <button class="w-full px-3 py-3 rounded-lg text-left transition-colors bg-accent/10 border border-accent/20">
+                    <p class="text-sm font-medium truncate mb-1">Company Policies</p>
+                    <p class="text-xs text-muted-foreground">Just now</p>
+                </button>
+                <button class="w-full px-3 py-3 rounded-lg text-left transition-colors hover:bg-secondary/50">
+                    <p class="text-sm font-medium truncate mb-1">Leave Balance Inquiry</p>
+                    <p class="text-xs text-muted-foreground">Yesterday</p>
+                </button>
+                <button class="w-full px-3 py-3 rounded-lg text-left transition-colors hover:bg-secondary/50">
+                    <p class="text-sm font-medium truncate mb-1">Salary Details</p>
+                    <p class="text-xs text-muted-foreground">3 days ago</p>
+                </button>
             </div>
         </div>
-        <form id="chatForm" class="chat-input-area">
-            {% csrf_token %}
-            <input type="text" id="chatInput" placeholder="Type your question here..." required autocomplete="off">
-            <button type="submit" class="btn btn-primary" id="chatSubmitBtn">Send</button>
-        </form>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <div class="flex-1 flex flex-col relative">
+        <div class="p-6 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-white drop-shadow-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">AI HR Assistant</h3>
+                    <p class="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                        <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
+                        Online and ready to help
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-auto p-6 space-y-6" id="chatBox">
+            <!-- Welcome Message -->
+            <div class="flex gap-4 justify-start animate-in fade-in duration-300">
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center flex-shrink-0 shadow-lg shadow-accent/20">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                </div>
+                <div class="max-w-2xl">
+                    <div class="rounded-2xl px-5 py-4 bg-card border border-border">
+                        <p class="whitespace-pre-wrap leading-relaxed text-sm">Hello <strong>{{ request.user.username }}</strong>! I am your AI HR Assistant. I can help you with company policies, FAQs, and your personal data (like salary and leave balance). How can I help you today?</p>
+                    </div>
+                    <p class="text-xs text-muted-foreground mt-2 px-1">Just now</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-border bg-card/50 backdrop-blur-sm">
+            <form id="chatForm" class="flex items-end gap-3 max-w-4xl mx-auto relative">
+                {% csrf_token %}
+                <button type="button" class="p-3 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground hover:text-foreground">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                </button>
+
+                <div class="flex-1 relative">
+                    <input
+                        type="text"
+                        id="chatInput"
+                        placeholder="Ask me anything about HR, your data, or company policies..."
+                        class="w-full px-4 py-3 bg-input-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring transition-shadow text-sm"
+                        required
+                        autocomplete="off"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    id="chatSubmitBtn"
+                    class="p-3 bg-accent text-accent-foreground rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
+            </form>
+            <p class="text-xs text-muted-foreground mt-3 text-center">
+                AI-powered responses may take a moment. Please do not share highly sensitive passwords.
+            </p>
+        </div>
     </div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const chatBox = document.getElementById('chatBox');
@@ -95,10 +108,43 @@
 
     function appendMessage(text, sender) {
         const msgDiv = document.createElement('div');
-        msgDiv.className = 'chat-message ' + sender;
-        msgDiv.textContent = text;
+        msgDiv.className = `flex gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+        
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        let html = '';
+        if (sender === 'assistant' || sender === 'agent') {
+            html = `
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center flex-shrink-0 shadow-lg shadow-accent/20">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+                </div>
+                <div class="max-w-2xl">
+                    <div class="rounded-2xl px-5 py-4 bg-card border border-border">
+                        <p class="whitespace-pre-wrap leading-relaxed text-sm">${text}</p>
+                    </div>
+                    <p class="text-xs text-muted-foreground mt-2 px-1">${now}</p>
+                </div>
+            `;
+        } else {
+            // User message
+            html = `
+                <div class="max-w-2xl order-first">
+                    <div class="rounded-2xl px-5 py-4 bg-accent text-accent-foreground shadow-lg shadow-accent/10">
+                        <p class="whitespace-pre-wrap leading-relaxed text-sm">${text}</p>
+                    </div>
+                    <p class="text-xs text-muted-foreground mt-2 px-1 text-right">${now}</p>
+                </div>
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-chart-3 to-chart-4 flex items-center justify-center flex-shrink-0 text-sm font-medium text-white shadow-lg">
+                    {{ request.user.username|first|upper }}
+                </div>
+            `;
+        }
+        
+        msgDiv.innerHTML = html;
         chatBox.appendChild(msgDiv);
+        lucide.createIcons();
         chatBox.scrollTop = chatBox.scrollHeight;
+        return msgDiv; // Return element so we can remove it if it's a loading spinner
     }
 
     chatForm.addEventListener('submit', async (e) => {
@@ -110,11 +156,21 @@
         chatInput.value = '';
         submitBtn.disabled = true;
         
-        // Show loading indicator
+        // Loading indicator
         const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'chat-message agent';
-        loadingDiv.innerHTML = '<span style="opacity: 0.5;">Agent is typing...</span>';
+        loadingDiv.className = 'flex gap-4 justify-start animate-in fade-in duration-300';
+        loadingDiv.innerHTML = `
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center flex-shrink-0 shadow-lg shadow-accent/20">
+                <i data-lucide="loader-2" class="w-5 h-5 text-white animate-spin"></i>
+            </div>
+            <div class="max-w-2xl">
+                <div class="rounded-2xl px-5 py-4 bg-card border border-border opacity-70">
+                    <p class="text-sm italic">Agent is typing...</p>
+                </div>
+            </div>
+        `;
         chatBox.appendChild(loadingDiv);
+        lucide.createIcons();
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
@@ -128,7 +184,6 @@
             });
             const data = await response.json();
             
-            // Remove loading
             chatBox.removeChild(loadingDiv);
             
             if (response.ok) {
@@ -144,5 +199,6 @@
             chatInput.focus();
         }
     });
+});
 </script>
 {% endblock %}

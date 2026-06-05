@@ -3,110 +3,92 @@
 {% block title %}Bulk Performance Reports{% endblock %}
 
 {% block content %}
-<style>
-    .report-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-4);
-        margin-bottom: var(--space-6);
-    }
-    .metric-card {
-        background: var(--bg-tertiary);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-lg);
-        padding: var(--space-4);
-        text-align: center;
-    }
-    .metric-value {
-        font-size: var(--font-5xl);
-        font-weight: 700;
-        margin: var(--space-2) 0;
-    }
-    .metric-value.high { color: var(--accent-success); }
-    .metric-value.medium { color: var(--accent-warning); }
-    .metric-value.low { color: var(--accent-danger); }
-    
-    .content-box {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        padding: var(--space-5);
-        margin-bottom: var(--space-4);
-    }
-    .content-box h3 {
-        color: var(--text-primary);
-        margin-top: 0;
-        margin-bottom: var(--space-3);
-        font-size: var(--font-xl);
-    }
-    .content-box p, .content-box pre {
-        color: var(--text-secondary);
-        white-space: pre-wrap;
-        font-family: inherit;
-        line-height: 1.6;
-        margin: 0;
-    }
-    .employee-section {
-        margin-bottom: var(--space-8);
-        padding-bottom: var(--space-6);
-        border-bottom: 2px solid var(--border-subtle);
-    }
-</style>
-
-<div class="container" style="max-width: 900px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
-        <a href="{% url 'core:hr_performance_dashboard' %}" class="btn btn-sm btn-outline">← Back to Dashboard</a>
-        <a href="{% url 'core:performance_download_pdf' %}" class="btn btn-sm btn-primary">Download PDF</a>
+<div class="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div class="flex items-center justify-between mb-8">
+        <a href="{% url 'core:hr_performance_dashboard' %}" class="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors text-sm font-medium">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+        </a>
+        <a href="{% url 'core:performance_download_pdf' %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium shadow-lg shadow-primary/20">
+            <i data-lucide="download" class="w-4 h-4"></i> Download PDF
+        </a>
     </div>
     
-    <div class="page-header" style="margin-bottom: var(--space-6);">
-        <h1>AI Performance Reports</h1>
-        <p>Bulk generated from your recent Excel upload.</p>
-        <div class="accent-line"></div>
+    <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold tracking-tight mb-2">AI Performance Reports</h1>
+        <p class="text-muted-foreground">Bulk generated from your recent Excel upload.</p>
     </div>
 
-    {% for record in records %}
-    <div class="employee-section">
-        <h2 style="color: var(--text-primary); margin-bottom: var(--space-2);">{{ record.employee.user.username }} <span style="font-size: var(--font-base); color: var(--text-muted); font-weight: normal;">({{ record.employee.department }})</span></h2>
-        <div style="color: var(--text-secondary); margin-bottom: var(--space-4);">Review Period: {{ record.review_period }}</div>
-
-        <!-- Top Metrics -->
-        <div class="report-grid">
-            <div class="metric-card">
-                <div style="color: var(--text-muted); font-size: var(--font-sm); text-transform: uppercase; letter-spacing: 1px;">Overall AI Score</div>
-                <div class="metric-value {% if record.performance_score >= 85 %}high{% elif record.performance_score >= 60 %}medium{% else %}low{% endif %}">
-                    {{ record.performance_score }}<span style="font-size: var(--font-xl); color: var(--text-muted);">/100</span>
-                </div>
-            </div>
+    <div class="space-y-12">
+        {% for record in records %}
+        <div class="bg-card rounded-2xl border border-border p-8 shadow-sm relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-chart-1/5 to-transparent pointer-events-none"></div>
             
-            <div class="metric-card">
-                <div style="color: var(--text-muted); font-size: var(--font-sm); text-transform: uppercase; letter-spacing: 1px;">KPI Achievement</div>
-                <div class="metric-value {% if record.kpi_achievement_percent >= 85 %}high{% elif record.kpi_achievement_percent >= 60 %}medium{% else %}low{% endif %}">
-                    {{ record.kpi_achievement_percent }}<span style="font-size: var(--font-xl); color: var(--text-muted);">%</span>
+            <div class="relative z-10">
+                <div class="flex justify-between items-end mb-6 pb-6 border-b border-border">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                            {{ record.employee.user.username }}
+                            <span class="text-sm font-medium px-3 py-1 bg-secondary text-secondary-foreground rounded-full border border-border">{{ record.employee.department }}</span>
+                        </h2>
+                        <div class="text-sm text-muted-foreground mt-2 flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4"></i> Review Period: {{ record.review_period }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-background rounded-xl border border-border p-6 text-center shadow-sm">
+                        <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Overall AI Score</div>
+                        <div class="text-5xl font-bold flex items-baseline justify-center gap-1
+                            {% if record.performance_score >= 85 %}text-green-500
+                            {% elif record.performance_score >= 60 %}text-chart-4
+                            {% else %}text-destructive{% endif %}">
+                            {{ record.performance_score }}<span class="text-xl text-muted-foreground font-medium">/100</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-background rounded-xl border border-border p-6 text-center shadow-sm">
+                        <div class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">KPI Achievement</div>
+                        <div class="text-5xl font-bold flex items-baseline justify-center gap-1
+                            {% if record.kpi_achievement_percent >= 85 %}text-green-500
+                            {% elif record.kpi_achievement_percent >= 60 %}text-chart-4
+                            {% else %}text-destructive{% endif %}">
+                            {{ record.kpi_achievement_percent }}<span class="text-xl text-muted-foreground font-medium">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Qualitative Analysis -->
+                <div class="grid gap-6">
+                    <div class="bg-green-500/5 rounded-xl border border-green-500/20 p-6">
+                        <h3 class="text-lg font-semibold text-green-500 flex items-center gap-2 mb-3">
+                            <i data-lucide="thumbs-up" class="w-5 h-5"></i> Key Strengths
+                        </h3>
+                        <p class="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{{ record.strengths }}</p>
+                    </div>
+
+                    <div class="bg-chart-4/5 rounded-xl border border-chart-4/20 p-6">
+                        <h3 class="text-lg font-semibold text-chart-4 flex items-center gap-2 mb-3">
+                            <i data-lucide="trending-up" class="w-5 h-5"></i> Areas for Improvement
+                        </h3>
+                        <p class="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{{ record.areas_for_improvement }}</p>
+                    </div>
+
+                    <div class="bg-chart-2/5 rounded-xl border border-chart-2/20 p-6">
+                        <h3 class="text-lg font-semibold text-chart-2 flex items-center gap-2 mb-3">
+                            <i data-lucide="target" class="w-5 h-5"></i> Recommended Actions
+                        </h3>
+                        <p class="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{{ record.recommended_actions }}</p>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- AI Qualitative Analysis -->
-        <div class="content-box">
-            <h3 style="color: var(--accent-success);">Key Strengths</h3>
-            <pre>{{ record.strengths }}</pre>
-        </div>
-
-        <div class="content-box">
-            <h3 style="color: var(--accent-warning);">Areas for Improvement</h3>
-            <pre>{{ record.areas_for_improvement }}</pre>
-        </div>
-
-        <div class="content-box">
-            <h3 style="color: var(--accent-info);">Recommended Actions</h3>
-            <pre>{{ record.recommended_actions }}</pre>
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
     
-    <div style="font-size: var(--font-sm); color: var(--text-muted); text-align: center;">
-        Reports generated by HR Agentic AI
+    <div class="text-xs text-muted-foreground text-center pt-8 pb-4 flex items-center justify-center gap-2">
+        <i data-lucide="bot" class="w-4 h-4"></i> Reports generated by TalentAI
     </div>
 </div>
 {% endblock %}

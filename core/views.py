@@ -223,6 +223,16 @@ def dashboard_view(request):
 
 @login_required
 @user_passes_test(is_hr_check)
+def approval_list_view(request):
+    """Redirect to the most recent pending approval, or back to dashboard if none."""
+    pending = JobPosting.objects.filter(status="pending_approval").order_by("-created_at").first()
+    if pending:
+        return redirect("core:approval", job_id=pending.id)
+    messages.info(request, "There are no pipelines currently pending approval.")
+    return redirect("core:dashboard")
+
+@login_required
+@user_passes_test(is_hr_check)
 def approval_view(request, job_id):
     """Display shortlisted candidates and drafted emails for HR approval."""
     job = get_object_or_404(JobPosting, pk=job_id)

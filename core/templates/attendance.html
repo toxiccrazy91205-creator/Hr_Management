@@ -3,46 +3,136 @@
 {% block title %}Attendance Tracker{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1>Attendance Tracking Agent</h1>
-        <p>Upload employee login/logout times to generate AI-powered performance reports and reliability scores.</p>
-        <div class="accent-line"></div>
+<div class="p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div class="page-header text-center max-w-2xl mx-auto mb-10">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-chart-4 to-chart-5 flex items-center justify-center shadow-lg shadow-chart-4/20">
+            <i data-lucide="calendar-clock" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Attendance Tracking Agent</h1>
+        <p class="text-muted-foreground">Upload employee login/logout times to generate AI-powered performance reports and reliability scores.</p>
     </div>
 
-    <div class="grid-2" style="display: flex; justify-content: center;">
-        <div class="card" style="width: 100%; max-width: 600px;">
-            <div class="card-header">
-                <div class="card-icon emerald"><i data-lucide="bar-chart-2"></i></div>
-                <div>
-                    <div class="card-title">Upload Timesheet</div>
-                    <div class="card-subtitle">Supported formats: .xlsx, .xls</div>
-                </div>
-            </div>
-
-            <form method="post" enctype="multipart/form-data" action="{% url 'core:attendance_upload' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label class="form-label">
-                        Employee Timesheet <span class="required">*</span>
-                    </label>
-                    <div class="upload-zone" id="upload-zone-attendance">
-                        <input type="file" name="attendance_file" id="attendance-input" accept=".xlsx,.xls" required>
-                        <span class="upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px;"></i></span>
-                        <div class="upload-text">
-                            <strong>Click to upload</strong> or drag and drop
-                        </div>
-                        <div class="upload-hint" id="file-label-attendance">Upload Excel file containing login and logout times</div>
+    <div class="flex justify-center">
+        <div class="bg-card rounded-xl border border-border p-8 shadow-sm w-full max-w-2xl relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-chart-4/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-chart-4/10 text-chart-4 flex items-center justify-center border border-chart-4/20">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold">Upload Timesheet</h2>
+                        <p class="text-sm text-muted-foreground">Supported formats: .xlsx, .xls</p>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-success btn-lg btn-block" id="submit-btn-attendance">
-                    <span class="spinner"></span>
-                    <span class="btn-text" style="display:flex;align-items:center;"><i data-lucide="bot" style="width:18px;height:18px;margin-right:8px;"></i> Generate Attendance Report</span>
-                </button>
-            </form>
+                <form method="post" enctype="multipart/form-data" action="{% url 'core:attendance_upload' %}" id="attendance-form" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-foreground">
+                            Employee Timesheet <span class="text-destructive">*</span>
+                        </label>
+                        
+                        <div id="drop-zone" class="border-2 border-dashed border-border bg-secondary/30 rounded-xl p-10 text-center transition-all duration-300 hover:border-chart-4/50 cursor-pointer flex flex-col items-center justify-center">
+                            <i data-lucide="upload-cloud" class="w-10 h-10 text-muted-foreground mb-4" id="upload-icon"></i>
+                            <h4 class="font-medium text-foreground mb-1">Click to upload or drag and drop</h4>
+                            <p class="text-sm text-muted-foreground mb-4" id="file-label">Upload Excel file containing login and logout times</p>
+                            
+                            <input type="file" name="attendance_file" id="attendance-input" accept=".xlsx,.xls" required class="hidden">
+                            <button type="button" class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium pointer-events-none border border-border">
+                                Browse Files
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-chart-4 text-white font-medium rounded-lg hover:opacity-90 transition-all shadow-lg shadow-chart-4/20 flex items-center justify-center gap-2" id="submit-btn">
+                        <i data-lucide="bot" class="w-5 h-5"></i>
+                        <span>Generate AI Attendance Report</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('attendance-input');
+    const fileLabel = document.getElementById('file-label');
+    const uploadIcon = document.getElementById('upload-icon');
+    const form = document.getElementById('attendance-form');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Click to upload
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('border-chart-4', 'bg-chart-4/5');
+        dropZone.classList.remove('border-border', 'bg-secondary/30');
+        uploadIcon.classList.add('text-chart-4', 'scale-110');
+        uploadIcon.classList.remove('text-muted-foreground');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-chart-4', 'bg-chart-4/5');
+        dropZone.classList.add('border-border', 'bg-secondary/30');
+        uploadIcon.classList.remove('text-chart-4', 'scale-110');
+        uploadIcon.classList.add('text-muted-foreground');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        updateFileName();
+    }
+
+    fileInput.addEventListener('change', updateFileName);
+
+    function updateFileName() {
+        if(fileInput.files.length > 0) {
+            fileLabel.textContent = fileInput.files[0].name;
+            fileLabel.classList.add('text-chart-4', 'font-medium');
+            uploadIcon.setAttribute('data-lucide', 'file-check-2');
+            uploadIcon.classList.add('text-chart-4');
+            lucide.createIcons();
+        }
+    }
+
+    form.addEventListener('submit', () => {
+        if(form.checkValidity()) {
+            submitBtn.innerHTML = `
+                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                <span>Analyzing Data...</span>
+            `;
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            lucide.createIcons();
+        }
+    });
+});
+</script>
 {% endblock %}

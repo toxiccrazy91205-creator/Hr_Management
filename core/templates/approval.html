@@ -3,183 +3,140 @@
 {% block title %}Review & Approve — {{ job.title }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <h1>Review & Approve</h1>
-        <p>The AI pipeline has completed screening. Review the shortlisted candidates and their drafted emails before sending.</p>
-        <div class="accent-line"></div>
-    </div>
-
-    <!-- Job Summary Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value">{{ candidates|length }}</div>
-            <div class="stat-label">Candidates Shortlisted</div>
+<div class="p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-3xl font-bold tracking-tight">AI Human-in-the-Loop Approval</h2>
+            <p class="text-muted-foreground mt-1">Review and approve AI-shortlisted candidates for: <span class="font-medium text-foreground">{{ job.title }}</span></p>
         </div>
-        <div class="stat-card">
-            <div class="stat-value">
-                {% with candidates|length as total %}
-                    {% widthratio total 1 1 %}
-                {% endwith %}
-            </div>
-            <div class="stat-label">Emails Drafted</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">
-                <span class="status-badge status-pending" style="font-size: var(--font-sm);"><i data-lucide="hourglass" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Pending</span>
-            </div>
-            <div class="stat-label">Approval Status</div>
+        <div class="px-4 py-2 bg-accent/10 text-accent rounded-lg border border-accent/20 flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span class="text-sm font-medium">{{ candidates|length }} Candidates Shortlisted</span>
         </div>
     </div>
 
-    <!-- Job Details Banner -->
-    <div class="card section">
-        <div class="card-header">
-            <div class="card-icon indigo"><i data-lucide="briefcase"></i></div>
-            <div>
-                <div class="card-title">{{ job.title }}</div>
-                <div class="card-subtitle">
-                    {{ job.required_skills }} &middot; {{ job.experience_years }}+ years experience
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Candidates Table View -->
     {% if candidates %}
-    <div class="section">
-        <h2 class="section-title" style="display:flex;align-items:center;"><i data-lucide="bar-chart-2" style="width:24px;height:24px;margin-right:8px;"></i> Shortlisted Candidates</h2>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Candidate</th>
-                        <th>Match Score</th>
-                        <th>Matched Skills</th>
-                        <th>Interview Slot</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in candidates %}
-                    <tr>
-                        <td>
-                            <div style="font-weight: 600;">{{ c.name }}</div>
-                            <div style="font-size: var(--font-xs); color: var(--text-muted);">
-                                {{ c.email|default:"No email found" }}
-                            </div>
-                        </td>
-                        <td>
-                            {% if c.match_score >= 75 %}
-                                <span class="score-badge score-high"><i data-lucide="check-circle-2" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> {{ c.match_score }}%</span>
-                            {% elif c.match_score >= 50 %}
-                                <span class="score-badge score-medium"><i data-lucide="alert-circle" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> {{ c.match_score }}%</span>
-                            {% else %}
-                                <span class="score-badge score-low"><i data-lucide="x-circle" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> {{ c.match_score }}%</span>
-                            {% endif %}
-                        </td>
-                        <td style="max-width: 250px;">
-                            <span style="font-size: var(--font-xs); color: var(--text-secondary);">
-                                {{ c.matched_skills|default:"—" }}
-                            </span>
-                        </td>
-                        <td style="white-space: nowrap;">
-                            <span style="font-size: var(--font-sm);"><i data-lucide="calendar" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> {{ c.interview_slot|default:"TBD" }}</span>
-                        </td>
-                        <td>
-                            {% if c.email %}
-                                <span class="status-badge status-approved"><i data-lucide="check" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Found</span>
-                            {% else %}
-                                <span class="status-badge status-draft"><i data-lucide="x" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Missing</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Email Drafts — Expandable Cards -->
-    <div class="section">
-        <h2 class="section-title" style="display:flex;align-items:center;"><i data-lucide="mail" style="width:24px;height:24px;margin-right:8px;"></i> Drafted Emails</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for c in candidates %}
-        <div class="candidate-card">
-            <div class="candidate-header">
-                <div class="candidate-info">
-                    <div class="candidate-avatar">
-                        {{ c.name|truncatechars:2|upper }}
-                    </div>
-                    <div>
-                        <div class="candidate-name">{{ c.name }}</div>
-                        <div class="candidate-email">{{ c.email|default:"No email" }}</div>
-                    </div>
+        <div class="bg-card rounded-xl border border-border p-6 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 hover:border-accent/30 animate-in zoom-in duration-300" style="animation-delay: {{ forloop.counter0|add:1 }}00ms;">
+            <div class="flex items-start justify-between mb-4">
+                <div class="pr-2">
+                    <h3 class="font-semibold text-lg mb-1 leading-tight">{{ c.name }}</h3>
+                    <p class="text-xs text-muted-foreground truncate" style="max-width: 180px;" title="{{ c.email }}">{{ c.email|default:"No email found" }}</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: var(--space-3);">
-                    {% if c.match_score >= 75 %}
-                        <span class="score-badge score-high">{{ c.match_score }}%</span>
-                    {% elif c.match_score >= 50 %}
-                        <span class="score-badge score-medium">{{ c.match_score }}%</span>
-                    {% else %}
-                        <span class="score-badge score-low">{{ c.match_score }}%</span>
-                    {% endif %}
-                    <span class="chevron"><i data-lucide="chevron-down" style="width:16px;height:16px;color:var(--text-muted);"></i></span>
+                
+                <!-- Circular Progress -->
+                <div class="relative w-16 h-16 shrink-0">
+                    <svg class="transform -rotate-90 w-full h-full">
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="4" fill="none" class="text-secondary"></circle>
+                        {% comment %} 
+                        Circumference is 2*PI*28 = 175.92. 
+                        Offset = 175.92 - (score/100)*175.92 
+                        We will use a fixed dasharray and set offset via inline style using the score
+                        {% endcomment %}
+                        <circle cx="32" cy="32" r="28" stroke="url(#gradient-{{ forloop.counter }})" stroke-width="4" fill="none" stroke-dasharray="175.92" style="stroke-dashoffset: calc(175.92 - ({{ c.match_score }} / 100) * 175.92);" class="transition-all duration-1000 ease-out" stroke-linecap="round"></circle>
+                        <defs>
+                            <linearGradient id="gradient-{{ forloop.counter }}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1"></stop>
+                                <stop offset="100%" stop-color="#8b5cf6"></stop>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="font-bold text-sm">{{ c.match_score }}</span>
+                    </div>
                 </div>
             </div>
-            <div class="candidate-details">
-                <div class="detail-row">
-                    <span class="detail-label">Interview Slot</span>
-                    <span class="detail-value"><i data-lucide="calendar" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> {{ c.interview_slot|default:"TBD" }}</span>
+
+            <div class="space-y-3">
+                <div>
+                    <p class="text-xs font-medium text-muted-foreground mb-2">Matched Skills</p>
+                    <div class="text-xs text-foreground/80 leading-relaxed bg-accent/5 p-2 rounded border border-border">
+                        {{ c.matched_skills|default:"—" }}
+                    </div>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Resume Source</span>
-                    <span class="detail-value"><i data-lucide="file-text" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> {{ c.resume_source|default:"—" }}</span>
+
+                <div class="pt-3 border-t border-border mt-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                        <i data-lucide="calendar" class="w-3 h-3 text-chart-4"></i>
+                        <span>Slot: {{ c.interview_slot|default:"TBD" }}</span>
+                    </div>
+                    {% if c.email %}
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500" title="Email Ready"></i>
+                    {% else %}
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-warning" title="No Email"></i>
+                    {% endif %}
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Matched Skills</span>
-                    <span class="detail-value">{{ c.matched_skills|default:"—" }}</span>
-                </div>
-                {% if c.drafted_email %}
-                <div style="margin-top: var(--space-4);">
-                    <div class="detail-label" style="margin-bottom: var(--space-2);"><i data-lucide="mail" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;display:inline-block;"></i> Email Draft</div>
-                    <div class="email-preview">{{ c.drafted_email }}</div>
-                </div>
-                {% endif %}
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Approval Action Bar -->
-    <div class="action-bar">
-        <div class="action-bar-text">
-            <strong>{{ candidates|length }}</strong> candidate(s) will receive interview invitation emails upon approval.
+    <div class="bg-card rounded-xl border border-border p-6 shadow-sm mt-6 animate-in slide-in-from-bottom-4 duration-500">
+        <div class="flex items-center gap-2 mb-4">
+            <i data-lucide="mail" class="w-5 h-5 text-accent"></i>
+            <h3 class="font-semibold text-lg">AI-Drafted Interview Email (Template)</h3>
+            <div class="px-2 py-0.5 text-xs bg-accent/10 text-accent font-medium rounded-full border border-accent/20">
+                Review & Edit
+            </div>
         </div>
-        <div class="action-bar-buttons">
-            <a href="{% url 'core:dashboard' %}" class="btn btn-outline">
-                ← Back to Dashboard
-            </a>
-            <form method="post" action="{% url 'core:approve_and_send' job_id=job.id %}" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-success btn-lg" id="approve-btn">
-                    <span class="spinner"></span>
-                    <span class="btn-text" style="display:flex;align-items:center;"><i data-lucide="check" style="width:18px;height:18px;margin-right:8px;"></i> Approve & Send Emails</span>
-                </button>
-            </form>
-        </div>
-    </div>
+        
+        <p class="text-xs text-muted-foreground mb-4">Note: The system will automatically inject specific candidate details (Name, Score, Skills, Time) into this template when sending. This preview shows the first candidate's draft.</p>
+        
+        <form method="post" action="{% url 'core:approve_and_send' job_id=job.id %}" id="approval-form">
+            {% csrf_token %}
+            <!-- Show first candidate's drafted email as the editable template -->
+            <textarea
+                name="email_template"
+                rows="14"
+                class="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-shadow resize-none mb-6 font-mono text-sm leading-relaxed"
+            >{{ candidates.0.drafted_email|default:"Dear Candidate,\n\nWe would like to invite you to an interview for the position..." }}</textarea>
 
+            <div class="flex items-center gap-3">
+                <button type="submit" id="approve-btn" class="flex-1 px-6 py-3 bg-success text-white font-medium rounded-lg hover:opacity-90 transition-all shadow-lg shadow-success/20 flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    <span>Approve & Send to All Candidates</span>
+                </button>
+                <a href="{% url 'core:dashboard' %}" class="px-6 py-3 bg-destructive/10 text-destructive font-medium rounded-lg hover:bg-destructive/20 transition-all border border-destructive/20 flex items-center justify-center gap-2">
+                    <i data-lucide="x-circle" class="w-5 h-5"></i>
+                    <span>Reject</span>
+                </a>
+            </div>
+        </form>
+    </div>
     {% else %}
-    <!-- No candidates -->
-    <div class="card" style="text-align: center; padding: var(--space-16);">
-        <div style="margin-bottom: var(--space-6); display: flex; justify-content: center;"><i data-lucide="inbox" style="width:64px;height:64px;color:var(--text-muted);"></i></div>
-        <h2 style="margin-bottom: var(--space-4); color: var(--text-secondary);">No Candidates Shortlisted</h2>
-        <p style="color: var(--text-muted); margin-bottom: var(--space-8);">
+    <div class="bg-card rounded-xl border border-border p-12 text-center shadow-sm animate-in zoom-in duration-300 mt-6">
+        <div class="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+            <i data-lucide="inbox" class="w-8 h-8 text-muted-foreground"></i>
+        </div>
+        <h2 class="text-xl font-semibold mb-2">No Candidates Shortlisted</h2>
+        <p class="text-muted-foreground mb-6 max-w-md mx-auto">
             The AI could not find suitable matches for this role. Try uploading more resumes or adjusting the requirements.
         </p>
-        <a href="{% url 'core:dashboard' %}" class="btn btn-primary">← Back to Dashboard</a>
+        <a href="{% url 'core:dashboard' %}" class="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-opacity">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Dashboard
+        </a>
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('approval-form');
+    const approveBtn = document.getElementById('approve-btn');
+    
+    if(form) {
+        form.addEventListener('submit', () => {
+            approveBtn.innerHTML = `
+                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                <span>Sending...</span>
+            `;
+            approveBtn.disabled = true;
+            approveBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            lucide.createIcons();
+        });
+    }
+});
+</script>
 {% endblock %}

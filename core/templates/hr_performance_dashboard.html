@@ -3,60 +3,139 @@
 {% block title %}HR Performance Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1>Performance Review Agent</h1>
-        <p>Upload a global Excel file containing performance data for multiple employees to generate AI reviews in bulk.</p>
-        <div class="accent-line"></div>
+<div class="p-8 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
+    <div class="page-header text-center max-w-2xl mx-auto mb-10">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-chart-1 to-chart-2 flex items-center justify-center shadow-lg shadow-chart-1/20">
+            <i data-lucide="trending-up" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Performance Review Agent</h1>
+        <p class="text-muted-foreground">Upload a global Excel file containing performance data for multiple employees to generate AI reviews in bulk.</p>
     </div>
 
-    <div class="grid-2" style="display: flex; justify-content: center;">
-        <div class="card" style="width: 100%; max-width: 600px;">
-            <div class="card-header">
-                <div class="card-icon warning"><i data-lucide="trending-up"></i></div>
-                <div>
-                    <div class="card-title">Upload Performance Data</div>
-                    <div class="card-subtitle">Supported formats: .xlsx, .xls</div>
-                </div>
-            </div>
-
-            <form method="post" enctype="multipart/form-data" action="{% url 'core:hr_performance_dashboard' %}">
-                {% csrf_token %}
-                <div class="form-group" style="margin-bottom: var(--space-4);">
-                    <label class="form-label" style="display: block; margin-bottom: var(--space-2);">Review Period (e.g. Q1 2026) <span class="required">*</span></label>
-                    <input type="text" name="review_period" class="form-input" style="width: 100%; box-sizing: border-box;" required placeholder="Q1 2026">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        Performance Data Excel <span class="required">*</span>
-                    </label>
-                    <div class="upload-zone" id="upload-zone-performance">
-                        <input type="file" name="performance_excel" id="performance-input" accept=".xlsx,.xls" required>
-                        <span class="upload-icon"><i data-lucide="file-spreadsheet" style="width:32px;height:32px;"></i></span>
-                        <div class="upload-text">
-                            <strong>Click to upload</strong> or drag and drop
-                        </div>
-                        <div class="upload-hint" id="file-label-performance">Upload Excel file containing employee emails and KPI data</div>
+    <div class="flex justify-center">
+        <div class="bg-card rounded-xl border border-border p-8 shadow-sm w-full max-w-2xl relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-chart-1/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-chart-1/10 text-chart-1 flex items-center justify-center border border-chart-1/20">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold">Upload Performance Data</h2>
+                        <p class="text-sm text-muted-foreground">Supported formats: .xlsx, .xls</p>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-warning btn-lg btn-block" id="submit-btn-performance">
-                    <span class="spinner" style="display: none;"></span>
-                    <span class="btn-text" style="display:flex;align-items:center;"><i data-lucide="bot" style="width:18px;height:18px;margin-right:8px;"></i> Generate Bulk Reviews</span>
-                </button>
-            </form>
+                <form method="post" enctype="multipart/form-data" action="{% url 'core:hr_performance_dashboard' %}" id="performance-form" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-foreground">Review Period (e.g. Q1 2026) <span class="text-destructive">*</span></label>
+                        <input type="text" name="review_period" class="w-full px-4 py-2.5 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-shadow text-sm" required placeholder="Q1 2026">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-foreground">
+                            Performance Data Excel <span class="text-destructive">*</span>
+                        </label>
+                        
+                        <div id="drop-zone-perf" class="border-2 border-dashed border-border bg-secondary/30 rounded-xl p-10 text-center transition-all duration-300 hover:border-chart-1/50 cursor-pointer flex flex-col items-center justify-center">
+                            <i data-lucide="upload-cloud" class="w-10 h-10 text-muted-foreground mb-4" id="upload-icon-perf"></i>
+                            <h4 class="font-medium text-foreground mb-1">Click to upload or drag and drop</h4>
+                            <p class="text-sm text-muted-foreground mb-4" id="file-label-perf">Upload Excel file containing employee emails and KPI data</p>
+                            
+                            <input type="file" name="performance_excel" id="performance-input" accept=".xlsx,.xls" required class="hidden">
+                            <button type="button" class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium pointer-events-none border border-border">
+                                Browse Files
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-chart-1 text-white font-medium rounded-lg hover:opacity-90 transition-all shadow-lg shadow-chart-1/20 flex items-center justify-center gap-2" id="submit-btn-perf">
+                        <i data-lucide="bot" class="w-5 h-5"></i>
+                        <span>Generate Bulk Reviews</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.querySelector('form').addEventListener('submit', function() {
-        const btn = document.getElementById('submit-btn-performance');
-        btn.querySelector('.spinner').style.display = 'inline-block';
-        btn.querySelector('.btn-text').textContent = ' Analyzing Data with AI...';
-        btn.classList.add('loading');
-        btn.disabled = true;
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('drop-zone-perf');
+    const fileInput = document.getElementById('performance-input');
+    const fileLabel = document.getElementById('file-label-perf');
+    const uploadIcon = document.getElementById('upload-icon-perf');
+    const form = document.getElementById('performance-form');
+    const submitBtn = document.getElementById('submit-btn-perf');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
     });
+
+    function preventDefaults (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('border-chart-1', 'bg-chart-1/5');
+        dropZone.classList.remove('border-border', 'bg-secondary/30');
+        uploadIcon.classList.add('text-chart-1', 'scale-110');
+        uploadIcon.classList.remove('text-muted-foreground');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-chart-1', 'bg-chart-1/5');
+        dropZone.classList.add('border-border', 'bg-secondary/30');
+        uploadIcon.classList.remove('text-chart-1', 'scale-110');
+        uploadIcon.classList.add('text-muted-foreground');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        updateFileName();
+    }
+
+    fileInput.addEventListener('change', updateFileName);
+
+    function updateFileName() {
+        if(fileInput.files.length > 0) {
+            fileLabel.textContent = fileInput.files[0].name;
+            fileLabel.classList.add('text-chart-1', 'font-medium');
+            uploadIcon.setAttribute('data-lucide', 'file-check-2');
+            uploadIcon.classList.add('text-chart-1');
+            lucide.createIcons();
+        }
+    }
+
+    form.addEventListener('submit', () => {
+        if(form.checkValidity()) {
+            submitBtn.innerHTML = `
+                <i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>
+                <span>Analyzing Data with AI...</span>
+            `;
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            lucide.createIcons();
+        }
+    });
+});
 </script>
 {% endblock %}
