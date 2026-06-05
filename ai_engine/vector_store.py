@@ -91,6 +91,44 @@ def extract_name_from_text(text: str) -> str:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Custom API-based Embedding Function (to prevent local ONNX Out-of-Memory)
+# ──────────────────────────────────────────────────────────────────────────────
+import requests
+from chromadb.api.types import EmbeddingFunction, Documents, Embeddings
+
+class OpenRouterEmbeddingFunction(EmbeddingFunction):
+    """Offloads text embedding to OpenRouter to save server RAM."""
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        # A lightweight, free embedding model available on OpenRouter
+        self.model_name = "jinaai/jina-embeddings-v2-base-en"
+        base_url = getattr(settings, "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+        self.api_url = f"{base_url.rstrip('/')}/embeddings"
+
+    def __call__(self, input: Documents) -> Embeddings:
+        if not input:
+            return []
+            
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": self.model_name,
+            "input": input
+        }
+        try:
+            response = requests.post(self.api_url, headers=headers, json=data, timeout=30)
+            response.raise_for_status()
+            json_resp = response.json()
+            return [item["embedding"] for item in json_resp["data"]]
+        except Exception as e:
+            logger.error("OpenRouter Embeddings API failed: %s. Response: %s", e, getattr(response, 'text', 'No response'))
+            # Return dummy embeddings (768 dimensions for Jina) to prevent a hard crash
+            return [[0.0] * 768 for _ in input]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # ChromaDB client singleton
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -108,12 +146,16 @@ def get_chroma_client() -> chromadb.ClientAPI:
 
 
 def get_collection(collection_name: str | None = None):
-    """Get or create a ChromaDB collection."""
+    """Get or create a ChromaDB collection using the remote embedding API."""
     name = collection_name or getattr(
         settings, "CHROMA_COLLECTION_NAME", "hr_resumes"
     )
     client = get_chroma_client()
-    return client.get_or_create_collection(name=name)
+    
+    api_key = getattr(settings, "OPENROUTER_API_KEY", "")
+    ef = OpenRouterEmbeddingFunction(api_key=api_key) if api_key else None
+    
+    return client.get_or_create_collection(name=name, embedding_function=ef)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
