@@ -9,27 +9,29 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write("Seeding data...")
 
-        # 1. Create HR User
-        if not User.objects.filter(username="hr@company.com").exists():
+        # 1. Create HR User (admin)
+        if not User.objects.filter(username="admin").exists():
             hr_user = User.objects.create_user(
-                username="hr@company.com",
-                email="hr@company.com",
-                password="admin123"
+                username="admin",
+                email="admin@company.com",
+                password="admin123",
+                is_superuser=True,
+                is_staff=True
             )
             EmployeeProfile.objects.create(
                 user=hr_user,
                 is_hr=True,
                 department="Human Resources"
             )
-            self.stdout.write(self.style.SUCCESS("Created HR user: hr@company.com / admin123"))
+            self.stdout.write(self.style.SUCCESS("Created HR user: admin / admin123"))
         else:
-            self.stdout.write("HR user already exists.")
+            self.stdout.write("HR user 'admin' already exists.")
 
-        # 2. Create Employee User
-        if not User.objects.filter(username="employee@company.com").exists():
+        # 2. Create Employee User (john)
+        if not User.objects.filter(username="john").exists():
             emp_user = User.objects.create_user(
-                username="employee@company.com",
-                email="employee@company.com",
+                username="john",
+                email="john@company.com",
                 password="pass123"
             )
             EmployeeProfile.objects.create(
@@ -40,9 +42,9 @@ class Command(BaseCommand):
                 leave_balance=14,
                 attendance_score=95
             )
-            self.stdout.write(self.style.SUCCESS("Created Employee user: employee@company.com / pass123"))
+            self.stdout.write(self.style.SUCCESS("Created Employee user: john / pass123"))
         else:
-            self.stdout.write("Employee user already exists.")
+            self.stdout.write("Employee user 'john' already exists.")
 
         # 3. Create Dummy Policies
         policies = [

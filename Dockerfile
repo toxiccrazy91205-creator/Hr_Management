@@ -32,4 +32,4 @@ RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # Run migrations and start the server using Gunicorn
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn hr_agent_project.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py seed_data && gunicorn hr_agent_project.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
