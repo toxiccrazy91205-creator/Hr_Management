@@ -67,8 +67,8 @@ def _save_uploaded_files(files) -> list[str]:
 # View 1: Dashboard — job form + resume upload
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def dashboard_view(request):
     """
     GET  → render the dashboard form (optionally pre-filled via ?resume=<job_id>).
@@ -227,8 +227,8 @@ def dashboard_view(request):
 # View 4: Success — final confirmation
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def success_view(request, job_id):
     """Display the final success page with sent-email summary."""
     job = get_object_or_404(JobPosting, pk=job_id)
@@ -243,7 +243,7 @@ def success_view(request, job_id):
 # View 5: Attendance Tracker — Upload timesheet
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
+@login_required(redirect_field_name=None)
 def attendance_upload_view(request):
     """
     GET  → Render the attendance page with card tap device (all users)
@@ -318,8 +318,8 @@ def attendance_upload_view(request):
 # View 6: Attendance Tracker — View report
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def attendance_report_view(request):
     """Display the AI-generated attendance report from session."""
     reports = request.session.get('attendance_reports', [])
@@ -330,8 +330,8 @@ def attendance_report_view(request):
 # View 7: Attendance Tracker — Download report as PDF
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def attendance_download_pdf_view(request):
     """Download the attendance report from session as a PDF file."""
     reports = request.session.get('attendance_reports', [])
@@ -432,8 +432,8 @@ def custom_logout_view(request):
 # View 9: HR Management (CRUD for Policies & FAQs)
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def hr_data_management_view(request):
     if request.method == "POST":
         action = request.POST.get("action")
@@ -492,13 +492,13 @@ def hr_data_management_view(request):
 # View 10: Employee Chatbot
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_employee_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_employee_check, redirect_field_name=None)
 def employee_chat_view(request):
     return render(request, "employee_chat.html")
 
-@login_required
-@user_passes_test(is_employee_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_employee_check, redirect_field_name=None)
 def api_chat_view(request):
     if request.method == "POST":
         try:
@@ -519,8 +519,8 @@ def api_chat_view(request):
 # View 11: Performance Review Dashboard (Bulk Upload)
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def hr_performance_dashboard_view(request):
     """Handles global Excel upload for bulk Performance Reviews."""
     if request.method == "POST":
@@ -640,8 +640,8 @@ def hr_performance_dashboard_view(request):
 # View 12: View Performance Report
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def view_performance_report_view(request):
     """Displays the AI-generated structured performance reports from the bulk upload."""
     record_ids = request.session.get('latest_performance_records', [])
@@ -659,8 +659,8 @@ def view_performance_report_view(request):
 import io
 from django.http import HttpResponse
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def performance_download_pdf_view(request):
     """Generates a PDF of all recently processed performance reports."""
     record_ids = request.session.get('latest_performance_records', [])
@@ -719,8 +719,8 @@ def performance_download_pdf_view(request):
 # View 15: Export Attendance Logs to Excel (HR Only)
 # ──────────────────────────────────────────────────────────────────────────────
 
-@login_required
-@user_passes_test(is_hr_check)
+@login_required(redirect_field_name=None)
+@user_passes_test(is_hr_check, redirect_field_name=None)
 def attendance_export_excel_view(request):
     """Export all attendance tap logs to an Excel (.xlsx) file."""
     try:
