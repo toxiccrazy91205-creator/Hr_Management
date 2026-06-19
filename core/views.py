@@ -21,13 +21,18 @@ from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
+from datetime import datetime
+from dateutil import parser as dt_parser
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
-from core.models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ, PerformanceRecord
+from core.models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ, PerformanceRecord, AttendanceLog
 
 def is_hr_check(user):
     return user.is_authenticated and hasattr(user, 'employeeprofile') and user.employeeprofile.is_hr
@@ -239,21 +244,38 @@ def success_view(request, job_id):
 # ──────────────────────────────────────────────────────────────────────────────
 
 @login_required
-@user_passes_test(is_hr_check)
 def attendance_upload_view(request):
     """
-    GET  → Render the upload form.
-    POST → Save the uploaded Excel file, generate report, and store in session.
+    GET  → Render the attendance page with card tap device (all users)
+           and optional timesheet upload + activity log (HR only).
+    POST → (HR only) Save the uploaded Excel file, generate report, and store in session.
     """
-    if request.method == "POST":
+    user = request.user
+    is_hr = hasattr(user, 'employeeprofile') and user.employeeprofile.is_hr
+
+    # Build the employee ID for the card tap device
+    if is_hr:
+        employee_id = f"HR-{user.username.upper()}"
+    else:
+        employee_id = f"EMP-{user.id:04d}"
+
+    if request.method == "POST" and is_hr:
         uploaded_file = request.FILES.get("attendance_file")
         if not uploaded_file:
             messages.error(request, "Please upload an Excel file.")
-            return render(request, "attendance.html")
+            return render(request, "attendance.html", {
+                "is_hr": is_hr,
+                "employee_id": employee_id,
+                "recent_logs": AttendanceLog.objects.all()[:50] if is_hr else [],
+            })
             
         if not (uploaded_file.name.endswith('.xlsx') or uploaded_file.name.endswith('.xls')):
             messages.error(request, "Invalid file format. Please upload .xlsx or .xls files only.")
-            return render(request, "attendance.html")
+            return render(request, "attendance.html", {
+                "is_hr": is_hr,
+                "employee_id": employee_id,
+                "recent_logs": AttendanceLog.objects.all()[:50] if is_hr else [],
+            })
 
         # Save temporarily
         upload_dir = os.path.join(settings.MEDIA_ROOT, "attendance")
@@ -277,9 +299,19 @@ def attendance_upload_view(request):
         except Exception as exc:
             logger.exception("Attendance processing failed")
             messages.error(request, f"Failed to process timesheet: {exc}")
-            return render(request, "attendance.html")
+            return render(request, "attendance.html", {
+                "is_hr": is_hr,
+                "employee_id": employee_id,
+                "recent_logs": AttendanceLog.objects.all()[:50] if is_hr else [],
+            })
 
-    return render(request, "attendance.html")
+    # GET request context
+    context = {
+        "is_hr": is_hr,
+        "employee_id": employee_id,
+        "recent_logs": AttendanceLog.objects.all()[:50] if is_hr else [],
+    }
+    return render(request, "attendance.html", context)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -668,3 +700,185 @@ def performance_download_pdf_view(request):
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="performance_reports.pdf"'
     return response
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 14: Hardware Tap API — Fingerprint / ID Card Attendance Webhook
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# View 15: Export Attendance Logs to Excel (HR Only)
+# ──────────────────────────────────────────────────────────────────────────────
+
+@login_required
+@user_passes_test(is_hr_check)
+def attendance_export_excel_view(request):
+    """Export all attendance tap logs to an Excel (.xlsx) file."""
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    except ImportError:
+        # Fallback: generate a CSV instead if openpyxl is not installed
+        import csv
+        logs = AttendanceLog.objects.all()
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="attendance_logs.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Employee ID', 'Timestamp', 'Tap Type', 'Device Type', 'Location'])
+        for log in logs:
+            writer.writerow([
+                log.employee_id,
+                log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                log.get_tap_type_display(),
+                log.device_type,
+                log.location,
+            ])
+        return response
+
+    logs = AttendanceLog.objects.all().order_by('-timestamp')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Attendance Logs"
+
+    # Styling
+    header_font = Font(name='Calibri', bold=True, color='FFFFFF', size=12)
+    header_fill = PatternFill(start_color='10B981', end_color='10B981', fill_type='solid')
+    header_alignment = Alignment(horizontal='center', vertical='center')
+    thin_border = Border(
+        left=Side(style='thin', color='E2E8F0'),
+        right=Side(style='thin', color='E2E8F0'),
+        top=Side(style='thin', color='E2E8F0'),
+        bottom=Side(style='thin', color='E2E8F0'),
+    )
+    in_fill = PatternFill(start_color='D1FAE5', end_color='D1FAE5', fill_type='solid')
+    out_fill = PatternFill(start_color='FEF3C7', end_color='FEF3C7', fill_type='solid')
+
+    # Headers
+    headers = ['#', 'Employee ID', 'Date', 'Time', 'Tap Type', 'Device Type', 'Location']
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = thin_border
+
+    # Data rows
+    for row_num, log in enumerate(logs, 2):
+        tap_display = 'CHECK-IN' if log.tap_type == 'IN' else 'CHECK-OUT'
+        row_data = [
+            row_num - 1,
+            log.employee_id,
+            log.timestamp.strftime('%Y-%m-%d'),
+            log.timestamp.strftime('%H:%M:%S'),
+            tap_display,
+            log.device_type,
+            log.location,
+        ]
+        row_fill = in_fill if log.tap_type == 'IN' else out_fill
+        for col_num, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_num, column=col_num, value=value)
+            cell.border = thin_border
+            cell.fill = row_fill
+            cell.alignment = Alignment(horizontal='center' if col_num in [1, 5] else 'left', vertical='center')
+
+    # Column widths
+    col_widths = [6, 18, 14, 12, 14, 18, 25]
+    for i, width in enumerate(col_widths, 1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
+
+    # Freeze header row
+    ws.freeze_panes = 'A2'
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="attendance_logs_{timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+    return response
+
+@csrf_exempt
+def hardware_tap_api(request):
+    """
+    POST-only endpoint that simulates receiving a tap from physical hardware
+    (RFID scanner, NFC reader, biometric device, etc.).
+
+    Logic:
+      • Count today's taps for the given employee.
+      • Even count (0, 2, 4 …) → this tap is "IN"
+      • Odd count  (1, 3, 5 …) → this tap is "OUT"
+
+    Expected JSON payload:
+        {
+            "employeeId": "EMP-8472",
+            "timestamp":  "2026-06-19T12:00:00Z",
+            "deviceType": "rfid_scanner",
+            "location":   "Main Entrance Gate"
+        }
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST requests are accepted."}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+
+    employee_id = data.get("employeeId", "").strip()
+    timestamp_str = data.get("timestamp", "").strip()
+    device_type = data.get("deviceType", "rfid_scanner").strip()
+    location = data.get("location", "Main Entrance").strip()
+
+    if not employee_id:
+        return JsonResponse({"error": "Missing required field: employeeId."}, status=400)
+
+    # Parse the timestamp (fall back to current time if missing / invalid)
+    if timestamp_str:
+        try:
+            tap_time = dt_parser.isoparse(timestamp_str)
+            # Make timezone-aware if naive
+            if tap_time.tzinfo is None:
+                tap_time = timezone.make_aware(tap_time)
+        except (ValueError, OverflowError):
+            tap_time = timezone.now()
+    else:
+        tap_time = timezone.now()
+
+    # Count today's existing taps for this employee
+    today_start = tap_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = tap_time.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    today_tap_count = AttendanceLog.objects.filter(
+        employee_id=employee_id,
+        timestamp__range=(today_start, today_end),
+    ).count()
+
+    # Even → IN, Odd → OUT
+    tap_type = "IN" if today_tap_count % 2 == 0 else "OUT"
+
+    log_entry = AttendanceLog.objects.create(
+        employee_id=employee_id,
+        timestamp=tap_time,
+        device_type=device_type,
+        location=location,
+        tap_type=tap_type,
+    )
+
+    return JsonResponse({
+        "status": "success",
+        "message": f"Tap recorded: {tap_type}",
+        "data": {
+            "id": log_entry.id,
+            "employeeId": log_entry.employee_id,
+            "tapType": log_entry.tap_type,
+            "tapNumber": today_tap_count + 1,
+            "timestamp": log_entry.timestamp.isoformat(),
+            "deviceType": log_entry.device_type,
+            "location": log_entry.location,
+        }
+    }, status=201)

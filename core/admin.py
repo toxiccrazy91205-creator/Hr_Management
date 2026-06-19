@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ, PerformanceRecord
+from .models import JobPosting, Candidate, EmployeeProfile, CompanyPolicy, FAQ, PerformanceRecord, AttendanceLog
 
 
 class CandidateInline(admin.TabularInline):
@@ -46,3 +46,11 @@ class PerformanceRecordAdmin(admin.ModelAdmin):
     list_display = ("employee", "review_period", "performance_score", "created_at")
     list_filter = ("review_period",)
     search_fields = ("employee__user__username", "review_period")
+
+
+@admin.register(AttendanceLog)
+class AttendanceLogAdmin(admin.ModelAdmin):
+    list_display = ("employee_id", "tap_type", "timestamp", "device_type", "location")
+    list_filter = ("tap_type", "device_type")
+    search_fields = ("employee_id", "location")
+    ordering = ("-timestamp",)

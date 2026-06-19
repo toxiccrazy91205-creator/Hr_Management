@@ -151,3 +151,38 @@ class PerformanceRecord(models.Model):
 
     def __str__(self):
         return f"{self.employee.user.username} - {self.review_period}"
+
+
+class AttendanceLog(models.Model):
+    """Stores each fingerprint / ID-card tap event received from hardware devices."""
+
+    TAP_CHOICES = [
+        ("IN", "Check-In"),
+        ("OUT", "Check-Out"),
+    ]
+
+    employee_id = models.CharField(
+        max_length=50, help_text="Hardware-level employee identifier (e.g. EMP-8472)"
+    )
+    timestamp = models.DateTimeField(help_text="Exact time of the tap event")
+    device_type = models.CharField(
+        max_length=100, blank=True, default="rfid_scanner",
+        help_text="Type of hardware device (rfid_scanner, nfc_reader, biometric, etc.)"
+    )
+    location = models.CharField(
+        max_length=255, blank=True, default="Main Entrance",
+        help_text="Physical location of the device"
+    )
+    tap_type = models.CharField(
+        max_length=3, choices=TAP_CHOICES,
+        help_text="Whether this tap was a Check-In or Check-Out"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+        verbose_name = "Attendance Log"
+        verbose_name_plural = "Attendance Logs"
+
+    def __str__(self):
+        return f"{self.employee_id} — {self.tap_type} @ {self.timestamp:%Y-%m-%d %H:%M}"

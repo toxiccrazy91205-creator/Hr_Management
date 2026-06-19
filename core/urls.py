@@ -35,4 +35,6 @@ urlpatterns = [
     path("performance/download-pdf/", views.performance_download_pdf_view, name="performance_download_pdf"),
     path("employee/chat/", views.employee_chat_view, name="employee_chat"),
     path("api/chat/", views.api_chat_view, name="api_chat"),
+    path("attendance/export-excel/", views.attendance_export_excel_view, name="attendance_export_excel"),
+    path("api/attendance/tap", views.hardware_tap_api, name="hardware_tap_api"),
 ]
