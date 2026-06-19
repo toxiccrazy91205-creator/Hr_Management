@@ -386,10 +386,10 @@ from django.views.decorators.cache import never_cache
 
 @never_cache
 def custom_login_view(request):
+    # If the user uses the 'Back' button to return to the login page,
+    # strictly log them out so they must enter credentials again.
     if request.user.is_authenticated:
-        if hasattr(request.user, 'employeeprofile') and request.user.employeeprofile.is_hr:
-            return redirect("core:dashboard")
-        return redirect("core:employee_chat")
+        logout(request)
         
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
