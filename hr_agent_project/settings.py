@@ -43,6 +43,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.DisableClientSideCachingMiddleware",
 ]
 
 ROOT_URLCONF = "hr_agent_project.urls"
@@ -127,3 +128,31 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("true", "1")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "hr@company.com")
+
+# ─── Security & Session Settings ──────────────────────────────────────────
+# Protect against Cross-Site Scripting (XSS) and content type sniffing
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Session settings
+SESSION_COOKIE_SECURE = not DEBUG  # Only send cookies over HTTPS in production
+SESSION_COOKIE_HTTPONLY = True     # Prevent JavaScript access to session cookies
+SESSION_COOKIE_SAMESITE = 'Strict' # Prevent CSRF by restricting cross-site usage
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True # Optional: clear session when browser closes
+SESSION_COOKIE_AGE = 1209600       # 2 weeks (default), adjust if needed
+
+# CSRF settings
+CSRF_COOKIE_SECURE = not DEBUG     # Only send cookies over HTTPS in production
+CSRF_COOKIE_HTTPONLY = True        # Prevent JavaScript access to CSRF cookies
+CSRF_COOKIE_SAMESITE = 'Strict'    # Prevent CSRF by restricting cross-site usage
+
+# Additional production security measures
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "True").lower() in ("true", "1")
+    SECURE_HSTS_SECONDS = 31536000 # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = 'DENY'
+else:
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
+

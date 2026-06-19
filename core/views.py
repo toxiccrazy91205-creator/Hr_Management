@@ -382,7 +382,15 @@ def attendance_download_pdf_view(request):
 # View 8: Authentication Views (Login, Signup, Logout)
 # ──────────────────────────────────────────────────────────────────────────────
 
+from django.views.decorators.cache import never_cache
+
+@never_cache
 def custom_login_view(request):
+    if request.user.is_authenticated:
+        if hasattr(request.user, 'employeeprofile') and request.user.employeeprofile.is_hr:
+            return redirect("core:dashboard")
+        return redirect("core:employee_chat")
+        
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
